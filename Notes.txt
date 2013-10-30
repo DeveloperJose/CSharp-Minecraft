@@ -1,0 +1,15 @@
+﻿Notes by Gamemakergm
+
+__--== Notes ==--__
+-I use the following dimensions
+	X = Width
+	Y = Length
+	Z = Depth / 3D Height
+
+	-That means that X and Y will always affect 2D movement while Z will be used for the depth (3D)
+	
+-XNA switches Y and Z, so when rendering we must do a switch. We can differentiate this because Vector3 will be used for XNA and Vector3I will be used for the client.
+
+-The Empty project is needed so I can compile Content to XNB format (Which is needed to be able to load the Content to the game)
+
+-If you need to re-create the content you need to compile the Content project and then copy the .xnb files to the Content folder in the JClient directory.
