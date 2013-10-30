@@ -1,5 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
-namespace JClient
+namespace HexaClassicClient
 {
     public sealed partial class Chunk
     {

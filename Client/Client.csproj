@@ -37,6 +37,8 @@
     <ApplicationIcon>Icon.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Client.cs" />
+    <Compile Include="Client.Events.cs" />
     <Compile Include="Plugin\IListener.cs" />
     <Compile Include="Util\Mesh.cs" />
     <Compile Include="Vector3I.cs" />
@@ -45,8 +47,6 @@
     <Compile Include="DebugSettings.cs" />
     <Compile Include="Util\Direction.cs" />
     <Compile Include="Rendering\Chunk.cs" />
-    <Compile Include="JClient.cs" />
-    <Compile Include="JClient.Events.cs" />
     <Compile Include="Player.cs" />
     <Compile Include="Plugin\PluginManager.cs" />
     <Compile Include="Program.cs" />

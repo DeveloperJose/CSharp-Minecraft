@@ -1,6 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-namespace JClient
+namespace HexaClassicClient
 {
     public sealed partial class World
     {
@@ -8,12 +8,12 @@ namespace JClient
         {
             BasicEffect effect = new BasicEffect(e.GraphicsDevice);
             effect.TextureEnabled = true;
-            effect.Texture = JClient.Terrain;
+            effect.Texture = HexaClassicClient.Terrain;
             effect.CurrentTechnique.Passes[0].Apply();
-            //effect.World = JClient.MainPlayer.FCameraTwo.WorldMatrix;
+            //effect.World = HexaClassicClient.MainPlayer.FCameraTwo.WorldMatrix;
             effect.World = Matrix.Identity;
-            effect.Projection = JClient.MainPlayer.Camera.Projection;
-            effect.View = JClient.MainPlayer.Camera.View;
+            effect.Projection = HexaClassicClient.MainPlayer.Camera.Projection;
+            effect.View = HexaClassicClient.MainPlayer.Camera.View;
             for (int x = 0; x < Chunks.GetLength(0); x++)
                 for (int y = 0; y < Chunks.GetLength(1); y++)
                     for (int z = 0; z < Chunks.GetLength(2); z++)

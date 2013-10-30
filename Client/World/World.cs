@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-namespace JClient
+namespace HexaClassicClient
 {
     public sealed partial class World
     {
@@ -82,8 +82,8 @@ namespace JClient
                         Chunks[x, y, z] = new Chunk(this, new Vector3(x * Chunk.SizeX, y * Chunk.SizeY, z * Chunk.SizeZ));
                         //Chunks[x, y, z].UpdateNeeded = true;
                     }
-            JClient.OnUpdate += Update;
-            JClient.OnDraw3D += Draw;
+            HexaClassicClient.OnUpdate += Update;
+            HexaClassicClient.OnDraw3D += Draw;
         }
         public Vector3 Spawn
         {

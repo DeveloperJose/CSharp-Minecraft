@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual C# Express 2010
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JClient", "JClient\JClient.csproj", "{F0F0B636-BD38-4C34-A91B-C96F6FFAE30C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Client", "Client\Client.csproj", "{F0F0B636-BD38-4C34-A91B-C96F6FFAE30C}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Content", "Content\Content.contentproj", "{0044B2D4-0733-4F7A-B5EC-BCE76740334B}"
 EndProject

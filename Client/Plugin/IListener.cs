@@ -1,4 +1,4 @@
-﻿namespace JClient
+﻿namespace HexaClassicClient
 {
     /// <summary>
     /// Identifies a class as a Listener of events.

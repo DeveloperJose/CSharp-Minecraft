@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
-using JClient.Rendering;
+using HexaClassicClient.Rendering;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-namespace JClient
+namespace HexaClassicClient
 {
     public sealed partial class Chunk
     {

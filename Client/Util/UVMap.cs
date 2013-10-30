@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using Microsoft.Xna.Framework;
 using System.Runtime.InteropServices;
-namespace JClient.Rendering
+namespace HexaClassicClient.Rendering
 {
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public struct UVMap

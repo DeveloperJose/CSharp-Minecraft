@@ -1,4 +1,4 @@
-﻿namespace JClient
+﻿namespace HexaClassicClient
 {
     /// <summary>
     /// Represents any Direction of a block.

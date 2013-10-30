@@ -1,6 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
-namespace JClient.Rendering
+namespace HexaClassicClient.Rendering
 {
     public sealed class FirstPersonCamera
     {
@@ -68,7 +68,7 @@ namespace JClient.Rendering
             //this.cameraSpeed = speed;
 
             //Setup the projection matrix
-            Projection = Matrix.CreatePerspectiveFieldOfView(MathHelper.PiOver4, JClient.Viewport.AspectRatio, NearDistance, FarDistance);
+            Projection = Matrix.CreatePerspectiveFieldOfView(MathHelper.PiOver4, HexaClassicClient.Viewport.AspectRatio, NearDistance, FarDistance);
 
             prevMouseState = Mouse.GetState();
         }
@@ -132,8 +132,8 @@ namespace JClient.Rendering
             if (currentMouseState != prevMouseState)
             {
                 //Get the change in mouse position
-                deltaX = Mouse.GetState().X - (JClient.Viewport.Width / 2);
-                deltaY = Mouse.GetState().Y - (JClient.Viewport.Height / 2);
+                deltaX = Mouse.GetState().X - (HexaClassicClient.Viewport.Width / 2);
+                deltaY = Mouse.GetState().Y - (HexaClassicClient.Viewport.Height / 2);
 
                 //This is used to buffer against use input.
                 //mouseRotationBuffer.X -= 0.01f * deltaX * dt;
@@ -153,7 +153,7 @@ namespace JClient.Rendering
                 deltaY = 0;
             }
 
-            Mouse.SetPosition(JClient.GameWindow.ClientBounds.Width / 2, JClient.GameWindow.ClientBounds.Height / 2);
+            Mouse.SetPosition(HexaClassicClient.GameWindow.ClientBounds.Width / 2, HexaClassicClient.GameWindow.ClientBounds.Height / 2);
 
             prevMouseState = currentMouseState;
         }

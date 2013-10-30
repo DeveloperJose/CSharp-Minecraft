@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 #endregion
 
-namespace JClient
+namespace HexaClassicClient
 {
 #if WINDOWS || LINUX
     /// <summary>
@@ -18,7 +18,7 @@ namespace JClient
         [STAThread]
         static void Main()
         {
-            using (var game = new JClient())
+            using (var game = new HexaClassicClient())
                 game.Run();
         }
     }

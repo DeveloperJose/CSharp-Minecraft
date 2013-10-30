@@ -1,4 +1,4 @@
-﻿namespace JClient
+﻿namespace HexaClassicClient
 {
     public enum BlockID : byte
     {

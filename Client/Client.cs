@@ -9,18 +9,18 @@ using Microsoft.Xna.Framework.Storage;
 using Microsoft.Xna.Framework.GamerServices;
 #endregion
 
-namespace JClient
+namespace HexaClassicClient
 {
     /// <summary>
     /// This is the main type for your game
     /// </summary>
-    public sealed partial class JClient : Game
+    public sealed partial class HexaClassicClient : Game
     {
         private GraphicsDeviceManager Graphics { get; set; }
         private SpriteBatch SpriteBatch { get; set; }
 
         /// <summary>
-        /// Dummy texture used to draw things without needing an actualy texture.
+        /// Dummy texture used to draw things without needing an actually texture.
         /// </summary>
         public static Texture2D EmptyTexture { get; private set; }
         /// <summary>
@@ -47,7 +47,7 @@ namespace JClient
         /// The window for the current game.
         /// </summary>
         public static GameWindow GameWindow { get; private set; }
-        public JClient()
+        public HexaClassicClient()
             : base()
         {
             Graphics = new GraphicsDeviceManager(this);
