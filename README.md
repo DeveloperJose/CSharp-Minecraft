@@ -1,4 +1,3 @@
-JClient
+HC-Client
 =======
-
-Minecraft Classic client created in C# using MonoGame.
+HexaClassic is a Minecraft Classic client created in C# using MonoGame.
