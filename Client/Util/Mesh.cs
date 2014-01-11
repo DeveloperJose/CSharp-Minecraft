@@ -1,6 +1,6 @@
 ﻿using System.Runtime.InteropServices;
 using Microsoft.Xna.Framework.Graphics;
-namespace HexaClassicClient
+namespace Client
 {
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public struct Mesh

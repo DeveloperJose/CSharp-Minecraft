@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
-using HexaClassicClient.Rendering;
+using Client.Rendering;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-namespace HexaClassicClient
+namespace Client
 {
     public sealed partial class Chunk
     {
@@ -28,6 +28,14 @@ namespace HexaClassicClient
                 }
             }
         }
+        // Normal vectors for each face (needed for lighting / display)
+        private static readonly Vector3 normalFront = new Vector3(0.0f, 0.0f, 1.0f);
+        private static readonly Vector3 normalBack = new Vector3(0.0f, 0.0f, -1.0f);
+        private static readonly Vector3 normalTop = new Vector3(0.0f, 1.0f, 0.0f);
+        private static readonly Vector3 normalBottom = new Vector3(0.0f, -1.0f, 0.0f);
+        private static readonly Vector3 normalLeft = new Vector3(-1.0f, 0.0f, 0.0f);
+        private static readonly Vector3 normalRight = new Vector3(1.0f, 0.0f, 0.0f);
+
         public Mesh CreateMesh()
         {
             List<VertexPositionNormalTexture> vertices = new List<VertexPositionNormalTexture>();
@@ -37,31 +45,30 @@ namespace HexaClassicClient
                     for (int z = 0; z < SizeZ; z++)
                     {
                         Vector3I Position = new Vector3I(x, y, z);
-
-                        Vector3 realPos = new Vector3(Position.X, Position.Y, Position.Z) + ChunkPosition;
-                        Vector3 cubePos = new Vector3(realPos.X + (realPos.X - 16), realPos.Z + (realPos.Z - 16), realPos.Y + (realPos.Y - 16));
-                        if (this[Position].Visible)
+                        
+                        if (this[Position].Visible())
                         {
-                            Vector3 topLeftFront = cubePos + new Vector3(-1.0f, 1.0f, -1.0f);
-                            Vector3 topLeftBack = cubePos + new Vector3(-1.0f, 1.0f, 1.0f);
-                            Vector3 topRightFront = cubePos + new Vector3(1.0f, 1.0f, -1.0f);
-                            Vector3 topRightBack = cubePos + new Vector3(1.0f, 1.0f, 1.0f);
+                            Vector3 size = new Vector3(1, 1, 1);
+                            if (this[Position].ID == (byte)BlockID.RedFlower)
+                            {
+                                size = size / 4;
+                            }
+                            Vector3 realPos = new Vector3(Position.X, Position.Y, Position.Z) + ChunkPosition;
+                            Vector3 cubePos = new Vector3(realPos.X, realPos.Z, realPos.Y) * (2);
 
+                            // Top face
+                            Vector3 topLeftFront = cubePos + new Vector3(-1.0f, 1.0f, -1.0f) * size;
+                            Vector3 topLeftBack = cubePos + new Vector3(-1.0f, 1.0f, 1.0f) * size;
+                            Vector3 topRightFront = cubePos + new Vector3(1.0f, 1.0f, -1.0f) * size;
+                            Vector3 topRightBack = cubePos + new Vector3(1.0f, 1.0f, 1.0f) * size;
+                            
                             // Calculate the cubePos of the vertices on the bottom face.
-                            Vector3 btmLeftFront = cubePos + new Vector3(-1.0f, -1.0f, -1.0f);
-                            Vector3 btmLeftBack = cubePos + new Vector3(-1.0f, -1.0f, 1.0f);
-                            Vector3 btmRightFront = cubePos + new Vector3(1.0f, -1.0f, -1.0f);
-                            Vector3 btmRightBack = cubePos + new Vector3(1.0f, -1.0f, 1.0f);
+                            Vector3 btmLeftFront = cubePos + new Vector3(-1.0f, -1.0f, -1.0f) * size;
+                            Vector3 btmLeftBack = cubePos + new Vector3(-1.0f, -1.0f, 1.0f) * size;
+                            Vector3 btmRightFront = cubePos + new Vector3(1.0f, -1.0f, -1.0f) * size;
+                            Vector3 btmRightBack = cubePos + new Vector3(1.0f, -1.0f, 1.0f) * size;
 
-                            // Normal vectors for each face (needed for lighting / display)
-                            Vector3 normalFront = new Vector3(0.0f, 0.0f, 1.0f);
-                            Vector3 normalBack = new Vector3(0.0f, 0.0f, -1.0f);
-                            Vector3 normalTop = new Vector3(0.0f, 1.0f, 0.0f);
-                            Vector3 normalBottom = new Vector3(0.0f, -1.0f, 0.0f);
-                            Vector3 normalLeft = new Vector3(-1.0f, 0.0f, 0.0f);
-                            Vector3 normalRight = new Vector3(1.0f, 0.0f, 0.0f);
-
-                            if (!this[x, y, z + 1].Visible)
+                            if (!this[x, y, z + 1].Visible())
                             {
                                 UVMap uv = this[x, y, z].CreateUVMapping(Direction.Top);
                                 // Add the vertices for the TOP face.
@@ -73,7 +80,7 @@ namespace HexaClassicClient
                                 vertices.Add(new VertexPositionNormalTexture(topRightBack, normalTop, uv.TopRight));
                             }
                             //if (!this[x, y - 1, z).Visible)
-                            if (!this[x, y, z - 1].Visible)
+                            if (!this[x, y, z - 1].Visible())
                             {
                                 UVMap uv = this[x, y, z].CreateUVMapping(Direction.Bottom);
                                 // Add the vertices for the BOTTOM face.
@@ -85,7 +92,7 @@ namespace HexaClassicClient
                                 vertices.Add(new VertexPositionNormalTexture(btmRightFront, normalBottom, uv.TopRight));
                             }
                             //if (!this[x, y, z + 1).Visible)
-                            if (!this[x, y + 1, z].Visible)
+                            if (!this[x, y + 1, z].Visible())
                             {
                                 UVMap uv = this[x, y, z].CreateUVMapping(Direction.Back);
                                 // Add the vertices for the BACK face.
@@ -97,7 +104,7 @@ namespace HexaClassicClient
                                 vertices.Add(new VertexPositionNormalTexture(btmRightBack, normalBack, uv.BottomLeft));
                             }
                             //if (!this[x, y, z - 1).Visible)
-                            if (!this[x, y - 1, z].Visible)
+                            if (!this[x, y - 1, z].Visible())
                             {
                                 UVMap uv = this[x, y, z].CreateUVMapping(Direction.Front);
                                 // Add the vertices for the FRONT face.
@@ -108,7 +115,7 @@ namespace HexaClassicClient
                                 vertices.Add(new VertexPositionNormalTexture(btmRightFront, normalFront, uv.BottomRight));
                                 vertices.Add(new VertexPositionNormalTexture(topRightFront, normalFront, uv.TopRight));
                             }
-                            if (!this[x - 1, y, z].Visible)
+                            if (!this[x - 1, y, z].Visible())
                             {
                                 UVMap uv = this[x, y, z].CreateUVMapping(Direction.Left);
                                 // Add the vertices for the LEFT face.
@@ -119,7 +126,7 @@ namespace HexaClassicClient
                                 vertices.Add(new VertexPositionNormalTexture(btmLeftBack, normalLeft, uv.BottomLeft));
                                 vertices.Add(new VertexPositionNormalTexture(topLeftFront, normalLeft, uv.TopRight));
                             }
-                            if (!this[x + 1, y, z].Visible)
+                            if (!this[x + 1, y, z].Visible())
                             {
                                 UVMap uv = this[x, y, z].CreateUVMapping(Direction.Right);
                                 // Add the vertices for the RIGHT face. 

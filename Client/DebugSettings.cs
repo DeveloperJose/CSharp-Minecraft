@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace HexaClassicClient
+namespace Client
 {
     public static class DebugSettings
     {

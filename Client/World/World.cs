@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-namespace HexaClassicClient
+namespace Client
 {
     public sealed partial class World
     {
@@ -82,12 +82,12 @@ namespace HexaClassicClient
                         Chunks[x, y, z] = new Chunk(this, new Vector3(x * Chunk.SizeX, y * Chunk.SizeY, z * Chunk.SizeZ));
                         //Chunks[x, y, z].UpdateNeeded = true;
                     }
-            HexaClassicClient.OnUpdate += Update;
-            HexaClassicClient.OnDraw3D += Draw;
+            Client.OnUpdate += Update;
+            Client.OnDraw3D += Draw;
         }
-        public Vector3 Spawn
+        public Vector3I Spawn
         {
-            get { return new Vector3(Length / 2, Width / 2, Height); }
+            get { return new Vector3I(Length / 2, Width / 2, Height); }
         }
         public void Update(object sender, UpdateEventArgs e)
         {
@@ -98,7 +98,10 @@ namespace HexaClassicClient
                         Chunks[x, y, z].Update();
                     }
         }
-        
+        public bool InBounds(Vector3I pos)
+        {
+            return InBounds(pos.X, pos.Y, pos.Z);
+        }
         public bool InBounds(int x, int y, int z)
         {
             bool checkX = x < 0 || x >= Length;

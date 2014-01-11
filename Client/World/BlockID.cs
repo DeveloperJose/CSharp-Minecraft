@@ -1,4 +1,4 @@
-﻿namespace HexaClassicClient
+﻿namespace Client
 {
     public enum BlockID : byte
     {

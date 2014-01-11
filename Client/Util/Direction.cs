@@ -1,4 +1,4 @@
-﻿namespace HexaClassicClient
+﻿namespace Client
 {
     /// <summary>
     /// Represents any Direction of a block.

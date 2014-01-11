@@ -3,16 +3,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace HexaClassicClient
+namespace Client
 {
     public struct Block
     {
         public readonly byte ID;
-        public readonly bool Visible;
+        public readonly bool Solid;
         public Block(BlockID id)
         {
             ID = (byte)id;
-            Visible = id != BlockID.Air && id != BlockID.None;
+            Solid = (id != BlockID.Air && id != BlockID.None && id != BlockID.RedFlower && id != BlockID.YellowFlower && id != BlockID.Sapling);
         }
         public Block(byte id) : this((BlockID)id) { }
     }

@@ -6,19 +6,20 @@ using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Storage;
+using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.GamerServices;
 #endregion
 
-namespace HexaClassicClient
+namespace Client
 {
     /// <summary>
     /// This is the main type for your game
     /// </summary>
-    public sealed partial class HexaClassicClient : Game
+    public sealed partial class Client : Game
     {
+        public static GraphicsDevice ClientDevice;  
         private GraphicsDeviceManager Graphics { get; set; }
         private SpriteBatch SpriteBatch { get; set; }
-
         /// <summary>
         /// Dummy texture used to draw things without needing an actually texture.
         /// </summary>
@@ -47,7 +48,16 @@ namespace HexaClassicClient
         /// The window for the current game.
         /// </summary>
         public static GameWindow GameWindow { get; private set; }
-        public HexaClassicClient()
+        /// <summary>
+        /// The default character texture
+        /// </summary>
+        public static Texture2D Char { get; private set; }
+        public static SoundEffect Calm1 { get; private set; }
+        private SoundEffectInstance Calm1Instance { get; set; }
+        private AudioEmitter AudioEmitter { get; set; }
+        private AudioListener AudioListener { get; set; }
+        private Vector3 ObjectPos { get; set; }
+        public Client()
             : base()
         {
             Graphics = new GraphicsDeviceManager(this);
@@ -55,6 +65,8 @@ namespace HexaClassicClient
             Viewport = GraphicsDevice.Viewport;
             GameWindow = Window;
             IsMouseVisible = false;
+
+            ClientDevice = GraphicsDevice;
         }
 
         /// <summary>
@@ -69,7 +81,6 @@ namespace HexaClassicClient
             PluginManager.Init();
             EmptyTexture = new Texture2D(GraphicsDevice, 1, 1);
             EmptyTexture.SetData<Color>(new Color[] { Color.White });
-            MainPlayer = new Player();
 
             // Temp. Level generation.
             MainWorld = new World(32, 32, 32);
@@ -77,10 +88,10 @@ namespace HexaClassicClient
                 for (int y = 0; y < MainWorld.Width; y++)
                     for (int z = 0; z < MainWorld.Height; z++)
                     {
-                        if (x == 0 && y == 0 && z == 0)
+                        if (x == 17 && y == 16 && z == 5)
                             MainWorld[x, y, z] = new Block(BlockID.Bricks);
                         else if (x == 16 && y == 16 && z == 5)
-                            MainWorld[x, y, z] = new Block(BlockID.Bricks);
+                            MainWorld[x, y, z] = new Block(BlockID.Obsidian);
                         else if (z == 0)
                             MainWorld[x, y, z] = new Block(BlockID.Admincrete);
                         else if (z == 1)
@@ -93,6 +104,7 @@ namespace HexaClassicClient
                             MainWorld[x, y, z] = new Block(BlockID.Air);
 
                     }
+            MainPlayer = new Player();
             base.Initialize();
         }
         /// <summary>
@@ -106,8 +118,23 @@ namespace HexaClassicClient
 
             Terrain = Content.Load<Texture2D>("terrain");
             Font = Content.Load<SpriteFont>("MainFont");
-
+            Char = Content.Load<Texture2D>("char");
             RaiseLoadEvent(Content);
+
+            Mob player = new Mob(Char, Vector3I.Zero);
+
+            Calm1 = Content.Load<SoundEffect>("calm1");
+            Calm1Instance = Calm1.CreateInstance();
+            AudioEmitter = new AudioEmitter();
+            AudioListener = new AudioListener();
+            ObjectPos = Vector3.Zero;
+
+            Calm1Instance.Apply3D(AudioListener, AudioEmitter);
+            Calm1Instance.IsLooped = true;
+
+            Calm1Instance.Volume = 1f; // Full volume.
+            Calm1Instance.Play();
+
         }
 
         /// <summary>
@@ -130,6 +157,17 @@ namespace HexaClassicClient
                 Exit();
 
             RaiseUpdateEvent(gameTime);
+
+            // Move the sound in a circle
+            ObjectPos = new Vector3(
+                (float)Math.Cos(gameTime.TotalGameTime.TotalSeconds) / 2,
+                0,
+                (float)Math.Sin(gameTime.TotalGameTime.TotalSeconds));
+            //ObjectPos = MainWorld.Spawn;
+            AudioEmitter.Position = ObjectPos;
+            AudioListener.Position = ObjectPos;
+            Calm1Instance.Apply3D(AudioListener, AudioEmitter);
+
             base.Update(gameTime);
         }
         /// <summary>
@@ -140,7 +178,10 @@ namespace HexaClassicClient
         {
             GraphicsDevice.Clear(Color.CornflowerBlue);
             GraphicsDevice.BlendState = BlendState.Opaque;
-            GraphicsDevice.DepthStencilState = DepthStencilState.Default;
+
+            // Enables transparency of blocks
+            GraphicsDevice.DepthStencilState.DepthBufferWriteEnable = true;
+            GraphicsDevice.DepthStencilState.DepthBufferEnable = true;
 
             if (DebugSettings.RenderWireframe)
             {

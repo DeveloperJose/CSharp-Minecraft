@@ -1,4 +1,4 @@
-﻿namespace HexaClassicClient
+﻿namespace Client
 {
     /// <summary>
     /// Identifies a class as a Listener of events.

@@ -4,11 +4,21 @@ using System.Linq;
 using System.Text;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework;
-using HexaClassicClient.Rendering;
-namespace HexaClassicClient
+using Client.Rendering;
+namespace Client
 {
     public static class RenderExtensions
     {
+        /// <summary>
+        /// Determines if a block should be rendered.
+        /// If true then the block is visible.
+        /// </summary>
+        /// <param name="b">Block to check.</param>
+        /// <returns>True if the should be rendered.</returns>
+        public static bool Visible(this Block b)
+        {
+            return (b.ID != (byte)BlockID.Air && b.ID != (byte)BlockID.None);
+        }
         /// <summary>
         /// Creates the UV mapping of a block.
         /// </summary>
@@ -29,7 +39,8 @@ namespace HexaClassicClient
             float x = ((int)b.TileVector(d).Y & ((1 << 16) - 1)) * Settings.Offset; // U
             // Same as X / 256
             // x / 256 = x >> 16
-            float y = ((int)b.TileVector(d).X >> 16) * Settings.Offset; // V
+            //float y = ((int)b.TileVector(d).X >> 16) * Settings.Offset; // V
+            float y = ((int)b.TileVector(d).X & ((1 << 16) - 1)) * Settings.Offset;
             return new UVMap(
                 new Vector2(x + Settings.Offset, y),
                 new Vector2(x, y),
@@ -65,7 +76,7 @@ namespace HexaClassicClient
                     }
                     break;
                 case BlockID.Dirt:
-                    return new Vector2(2, 0);
+                    return new Vector2(0, 2);
                 case BlockID.Cobblestone:
                     break;
                 case BlockID.Wood:
@@ -135,7 +146,7 @@ namespace HexaClassicClient
                 case BlockID.YellowFlower:
                     break;
                 case BlockID.RedFlower:
-                    break;
+                    return new Vector2(0, 12);
                 case BlockID.BrownMushroom:
                     break;
                 case BlockID.RedMushroom:
@@ -149,7 +160,7 @@ namespace HexaClassicClient
                 case BlockID.Slab:
                     break;
                 case BlockID.Bricks:
-                    break;
+                    return new Vector2(FirstPersonCamera.Y, FirstPersonCamera.X);
                 case BlockID.TNT:
                     break;
                 case BlockID.Books:

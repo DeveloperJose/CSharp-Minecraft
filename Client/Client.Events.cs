@@ -2,9 +2,9 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
-namespace HexaClassicClient
+namespace Client
 {
-    public sealed partial class HexaClassicClient
+    public sealed partial class Client
     {
         // Game events
         public static event EventHandler<ContentEventArgs> OnLoad;

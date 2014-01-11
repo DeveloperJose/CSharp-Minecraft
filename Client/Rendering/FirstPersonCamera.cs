@@ -1,76 +1,66 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
-namespace HexaClassicClient.Rendering
+namespace Client.Rendering
 {
     public sealed class FirstPersonCamera
     {
+        public static int X = 0;
+        public static int Y = 0;
+
         public const float MouseSpeed = 0.5f;
         public const float MovementSpeed = 15f;
         public const float NearDistance = 0.05f;
         public const float FarDistance = 100f;
-        
-        private Vector3 cameraPosition;
-        private Vector3 cameraRotation;
-        private Vector3 cameraLookAt;
-        
-        private Vector3 mouseRotationBuffer;    //rotation buffer for mouse movement
-        private MouseState prevMouseState;      //previous mouse state
-        private MouseState currentMouseState;   //current mouse state
-        //Properties
 
-        //Gets or sets our camera's position vector
+        public bool IsJumping { get; set; }
+
+        private Vector3 _position;
         public Vector3 Position
         {
-            get { return cameraPosition; }
+            get { return _position; }
             set
             {
-                cameraPosition = value;
-                //Must update the look at vector post translation or rotation
-                //changes.
+                _position = value;
+                // Must update.
                 UpdateLookAt();
             }
         }
-
-        //Gets or sets our camera's rotation vector
+        private Vector3 _rotation;
         public Vector3 Rotation
         {
-            get { return cameraRotation; }
+            get { return _rotation; }
             set
             {
-                cameraRotation = value;
-                //Must update the look at vector post translation or rotation
-                //changes.
+                _rotation = value;
                 UpdateLookAt();
             }
         }
+        private Vector3 Target { get; set; }
 
-        public Matrix Projection
-        {
-            get;
-            protected set;
-        }
+        private Vector3 MouseRotationBuffer;
+        private MouseState PrevMouseState { get; set; }
+        private MouseState CurrentMouseState { get; set; }
 
-        //Returns our camera's view matrix
-        public Matrix View
+        public Matrix ProjectionMatrix { get; set; }
+
+        public Matrix ViewMatrix
         {
             get
             {
-                return Matrix.CreateLookAt(Position, cameraLookAt, Vector3.Up);
+                return Matrix.CreateLookAt(Position, Target, Vector3.Up);
             }
         }
 
-
-        //Constructor
         public FirstPersonCamera(Vector3 position, Vector3 rotation)
         {
             Position = position;
             Rotation = rotation;
-            //this.cameraSpeed = speed;
 
             //Setup the projection matrix
-            Projection = Matrix.CreatePerspectiveFieldOfView(MathHelper.PiOver4, HexaClassicClient.Viewport.AspectRatio, NearDistance, FarDistance);
+            ProjectionMatrix = Matrix.CreatePerspectiveFieldOfView(MathHelper.PiOver4, Client.Viewport.AspectRatio, NearDistance, FarDistance);
 
-            prevMouseState = Mouse.GetState();
+            PrevMouseState = Mouse.GetState();
+            IsJumping = false;
         }
 
         //Updates the camera's lookAt vector
@@ -78,37 +68,63 @@ namespace HexaClassicClient.Rendering
         {
             //Calculate a rotation matrix from our camera's rotation, used
             //to orient our look at vector
-            Matrix rotationMatrix = Matrix.CreateRotationX(cameraRotation.X) *
-                                  Matrix.CreateRotationY(cameraRotation.Y);
+            Matrix rotationMatrix = Matrix.CreateRotationX(Rotation.X) *
+                                  Matrix.CreateRotationY(Rotation.Y);
             //Create the look at offset vector based on the direction our camera is
             //originally looking and our rotation matrix
-            Vector3 lookAtOffset = Vector3.Transform(
-                    Vector3.UnitZ, rotationMatrix);
+            Vector3 lookAtOffset = Vector3.Transform(Vector3.UnitZ, rotationMatrix);
             //Finally, build the camera's look at vector by adding
             //our current position and the look at vector offset.
-            cameraLookAt = cameraPosition + lookAtOffset;
+            Target = Position + lookAtOffset;
         }
-
+        private KeyboardState State;
         public void Update(GameTime gameTime)
         {
             //Delta time
             float dt = (float)gameTime.ElapsedGameTime.TotalSeconds;
 
-            currentMouseState = Mouse.GetState();
+            CurrentMouseState = Mouse.GetState();
 
             Vector3 moveVector = Vector3.Zero;
 
-            //Handle basic key movement
-            if (Keyboard.GetState().IsKeyDown(Keys.W))
-                moveVector.Z = 1; //cameraSpeed * dt;
-            if (Keyboard.GetState().IsKeyDown(Keys.S))
-                moveVector.Z = -1; //cameraSpeed * dt;
-            if (Keyboard.GetState().IsKeyDown(Keys.A))
-                moveVector.X = 1;// cameraSpeed* dt;
-            if (Keyboard.GetState().IsKeyDown(Keys.D))
-                moveVector.X = -1;//cameraSpeed * dt;
+            KeyboardState newState = Keyboard.GetState();
+            if (State == null)
+                State = newState;
 
+            if (newState.IsKeyDown(Keys.W))
+                moveVector.Z = 1; //cameraSpeed * dt;
+            if (newState.IsKeyDown(Keys.S))
+                moveVector.Z = -1; //cameraSpeed * dt;
+            if (newState.IsKeyDown(Keys.A))
+                moveVector.X = 1;// cameraSpeed* dt;
+            if (newState.IsKeyDown(Keys.D))
+                moveVector.X = -1;//cameraSpeed * dt;
+            if (newState.IsKeyDown(Keys.R))
+                MoveTo(Client.MainWorld.Spawn, Vector3.Zero);
+            if (newState.IsKeyDown(Keys.Q))
+                moveVector.Y = 1;
+            if (newState.IsKeyDown(Keys.E))
+                moveVector.Y = -1;
+            if (newState.IsKeyUp(Keys.NumPad2) && State.IsKeyDown(Keys.NumPad2))
+                X++;
+            if (newState.IsKeyUp(Keys.NumPad5) && State.IsKeyDown(Keys.NumPad5))
+                Y++;
+            if (newState.IsKeyUp(Keys.NumPad1) && State.IsKeyDown(Keys.NumPad1))
+                X--;
+            if (newState.IsKeyUp(Keys.NumPad4) && State.IsKeyDown(Keys.NumPad4))
+                Y--;
+            if (newState.IsKeyDown(Keys.Space) && !IsJumping)
+            {
+                moveVector.Y += 7;
+                IsJumping = true;
+            }
+            Client.MainWorld[Vector3I.Zero] = Client.MainWorld[Vector3I.Zero];
+            //if (newState.IsKeyDown(Keys.Space) && !IsJumping){
+            //    moveVector.Y = 5;
+            //    IsJumping = true;
+            //}
             //Now if our movement vector is not zero
+
             if (moveVector != Vector3.Zero)
             {
                 //We must normalize the vector (make it of unit length (1))
@@ -117,11 +133,32 @@ namespace HexaClassicClient.Rendering
                 moveVector *= MovementSpeed * dt;
 
                 //This is for checking movement parameters
-                //Vector3 newLoc = PreviewMove(moveVector);
+                Vector3 newLoc = PreviewMove(moveVector);
+                Vector3I location = new Vector3I(newLoc) / 2;
 
-                //Now we move the camera using that movement vector
-                Move(moveVector);
+                if (Client.MainWorld.InBounds(location))
+                {
+                    //Now we move the camera using that movement vector
+                    Move(moveVector);
+                }
             }
+            
+            //Vector3 gravityVector = new Vector3(0, -0.5f, 0);
+            
+            //Vector3I check = new Vector3I(PreviewMove(gravityVector));
+            //if (Client.MainWorld.InBounds(check))
+            //{
+            //    Vector3I blockPos = (check / 2) - new Vector3I(0, 0, 1);
+            //    if (!Client.MainWorld[blockPos].Solid)
+            //    {
+            //        Move(gravityVector);
+            //    }
+            //    else
+            //    {
+            //        if (IsJumping)
+            //            IsJumping = false;
+            //    }
+            //}
 
             //Change in mouse position
             //x and y
@@ -129,33 +166,32 @@ namespace HexaClassicClient.Rendering
             float deltaY;
 
             //Handle mouse movement
-            if (currentMouseState != prevMouseState)
+            if (CurrentMouseState != PrevMouseState)
             {
                 //Get the change in mouse position
-                deltaX = Mouse.GetState().X - (HexaClassicClient.Viewport.Width / 2);
-                deltaY = Mouse.GetState().Y - (HexaClassicClient.Viewport.Height / 2);
+                deltaX = Mouse.GetState().X - (Client.Viewport.Width / 2);
+                deltaY = Mouse.GetState().Y - (Client.Viewport.Height / 2);
 
                 //This is used to buffer against use input.
-                //mouseRotationBuffer.X -= 0.01f * deltaX * dt;
-                //mouseRotationBuffer.Y -= 0.01f * deltaY * dt;
-                mouseRotationBuffer.X -= MouseSpeed * deltaX * dt;
-                mouseRotationBuffer.Y -= MouseSpeed * deltaY * dt;
-                if (mouseRotationBuffer.Y < MathHelper.ToRadians(-75.0f))
-                    mouseRotationBuffer.Y = mouseRotationBuffer.Y - (mouseRotationBuffer.Y - MathHelper.ToRadians(-75.0f));
-                if (mouseRotationBuffer.Y > MathHelper.ToRadians(90.0f))
-                    mouseRotationBuffer.Y = mouseRotationBuffer.Y - (mouseRotationBuffer.Y - MathHelper.ToRadians(90.0f));
+                MouseRotationBuffer.X -= MouseSpeed * deltaX * dt;
+                MouseRotationBuffer.Y -= MouseSpeed * deltaY * dt;
+                if (MouseRotationBuffer.Y < MathHelper.ToRadians(-75.0f))
+                    MouseRotationBuffer.Y = MouseRotationBuffer.Y - (MouseRotationBuffer.Y - MathHelper.ToRadians(-75.0f));
+                if (MouseRotationBuffer.Y > MathHelper.ToRadians(90.0f))
+                    MouseRotationBuffer.Y = MouseRotationBuffer.Y - (MouseRotationBuffer.Y - MathHelper.ToRadians(90.0f));
 
 
-                Rotation = new Vector3(-MathHelper.Clamp(mouseRotationBuffer.Y, MathHelper.ToRadians(-75.0f),
-                    MathHelper.ToRadians(90.0f)), MathHelper.WrapAngle(mouseRotationBuffer.X), 0);
+                Rotation = new Vector3(-MathHelper.Clamp(MouseRotationBuffer.Y, MathHelper.ToRadians(-75.0f),
+                    MathHelper.ToRadians(90.0f)), MathHelper.WrapAngle(MouseRotationBuffer.X), 0);
 
                 deltaX = 0;
                 deltaY = 0;
             }
 
-            Mouse.SetPosition(HexaClassicClient.GameWindow.ClientBounds.Width / 2, HexaClassicClient.GameWindow.ClientBounds.Height / 2);
+            Mouse.SetPosition(Client.GameWindow.ClientBounds.Width / 2, Client.GameWindow.ClientBounds.Height / 2);
 
-            prevMouseState = currentMouseState;
+            PrevMouseState = CurrentMouseState;
+            State = newState;
         }
 
         //Sets the camera's position and rotation
@@ -164,16 +200,15 @@ namespace HexaClassicClient.Rendering
             Position = position;
             Rotation = rotation;
         }
-
         //Used to move simulate camera movement
         //without actually moving the camera
         //Good for checking collision before allowing player to move
         public Vector3 PreviewMove(Vector3 amount)
         {
-            Matrix rotate = Matrix.CreateRotationY(cameraRotation.Y);
+            Matrix rotate = Matrix.CreateRotationY(Rotation.Y);
             Vector3 movement = new Vector3(amount.X, amount.Y, amount.Z);
             movement = Vector3.Transform(movement, rotate);
-            return cameraPosition + movement;
+            return Position + movement;
         }
 
         //Actually moves the camera by the scale factor passed in

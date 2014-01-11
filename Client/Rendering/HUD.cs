@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Graphics;
-namespace HexaClassicClient
+namespace Client
 {
     public sealed class HUD : IListener
     {
@@ -14,8 +15,8 @@ namespace HexaClassicClient
 
         public void Init()
         {
-            HexaClassicClient.OnUpdate += Update;
-            HexaClassicClient.OnDraw2D += Draw2D;
+            Client.OnUpdate += Update;
+            Client.OnDraw2D += Draw2D;
         }
         public void Update(object sender, UpdateEventArgs e)
         {
@@ -35,18 +36,26 @@ namespace HexaClassicClient
             e.SpriteBatch.Begin();
 
             string fps = string.Format("FPS: {0}", frameRate);
-            e.SpriteBatch.DrawString(HexaClassicClient.Font, fps, Vector2.Zero, Color.White);
+            e.SpriteBatch.DrawString(Client.Font, fps, Vector2.Zero, Color.White);
 
-            //string pos = string.Format("X:{0},Y:{1},Z:{2}", HexaClassicClient.MainPlayer.Camera.Position.X, HexaClassicClient.MainPlayer.Camera.Position.Y, HexaClassicClient.MainPlayer.Camera.Position.Z);
-            //DrawString(e.SpriteBatch, pos, 1);
+            Vector3I pos = new Vector3I(Client.MainPlayer.Camera.Position);
+            string posText = string.Format("X: {0} - Y: {1} - Z: {2}", pos.X, pos.Y, pos.Z);
+            e.SpriteBatch.DrawString(Client.Font, posText, new Vector2(0, 14), Color.White);
 
-            //Vector3I blockPos = new Vector3I((int)HexaClassicClient.MainPlayer.Camera.Position.X - 16, (int)(HexaClassicClient.MainPlayer.Camera.Position.Z - 16), (int)HexaClassicClient.MainPlayer.Camera.Position.Y - 16);
-            //Vector3 realPos = HexaClassicClient.MainPlayer.Camera.Position;
-            //Vector3 cubePos = new Vector3(realPos.X, realPos.Y, realPos.Z);
-            //Vector3I finalPos = new Vector3I((int)cubePos.X, (int)cubePos.Z, (int)cubePos.Y + 5);
-            //Block b = HexaClassicClient.MainWorld[finalPos];
-            //string blockUnder = string.Format("Under: ({0},{1},{2}) - {3}", finalPos.X, finalPos.Y, finalPos.Z, (BlockID)b.ID);
-            //DrawString(e.SpriteBatch, blockUnder, 2);
+            Vector3I underPos = (new Vector3I(pos) / 2); //- Client.MainPlayer.Head;
+            underPos = new Vector3I(underPos.X, underPos.Y, underPos.Z - 3);
+            Block b = Client.MainWorld[underPos];
+            string blockUnder = string.Format("Under: {0}", (BlockID)b.ID);
+            e.SpriteBatch.DrawString(Client.Font, blockUnder, new Vector2(0, 28), Color.White);
+
+            Vector3I inFront = new Vector3I(pos) + new Vector3I(0, 1, 0);
+            Block bb = Client.MainWorld[inFront];
+            e.SpriteBatch.DrawString(Client.Font, (BlockID)b.ID + "", new Vector2(0, 42), Color.White);
+
+            var rot = Client.MainPlayer.Camera.Rotation;
+            string mouse = string.Format("Rot: X={0}, Y={1}, Z={2}", rot.X, rot.Y, rot.Z);
+            e.SpriteBatch.DrawString(Client.Font, mouse, new Vector2(0, 56), Color.White);
+
             e.SpriteBatch.End();
         }
     }
