@@ -11,6 +11,7 @@ namespace Client
     public sealed class Player
     {
         //public ChaseCamera Camera;
+        public float Height = 0.62f;
         public FirstPersonCamera Camera;
         public Player()
         {

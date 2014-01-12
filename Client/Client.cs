@@ -17,7 +17,8 @@ namespace Client
     /// </summary>
     public sealed partial class Client : Game
     {
-        public static GraphicsDevice ClientDevice;  
+        public static readonly string Version = "v0.1.0";
+        public static bool InputAllowed { get; set; }
         private GraphicsDeviceManager Graphics { get; set; }
         private SpriteBatch SpriteBatch { get; set; }
         /// <summary>
@@ -45,6 +46,17 @@ namespace Client
         /// </summary>
         public static Viewport Viewport { get; private set; }
         /// <summary>
+        /// The center of the viewport
+        /// </summary>
+        public static Vector2 WindowCenter
+        {
+            get
+            {
+                return new Vector2(Viewport.Bounds.Width / 2, Viewport.Bounds.Height / 2);
+            }
+        }
+        
+        /// <summary>
         /// The window for the current game.
         /// </summary>
         public static GameWindow GameWindow { get; private set; }
@@ -65,8 +77,9 @@ namespace Client
             Viewport = GraphicsDevice.Viewport;
             GameWindow = Window;
             IsMouseVisible = false;
-
-            ClientDevice = GraphicsDevice;
+            InputAllowed = true;
+            Window.Title = "HC(HexaClassic) Client by Gamemakergm - " + Version;
+            
         }
 
         /// <summary>
@@ -153,8 +166,8 @@ namespace Client
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Update(GameTime gameTime)
         {
-            if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
-                Exit();
+            /*if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
+                Exit();*/
 
             RaiseUpdateEvent(gameTime);
 
@@ -177,11 +190,12 @@ namespace Client
         protected override void Draw(GameTime gameTime)
         {
             GraphicsDevice.Clear(Color.CornflowerBlue);
-            GraphicsDevice.BlendState = BlendState.Opaque;
 
+            GraphicsDevice.BlendState = BlendState.Opaque;
             // Enables transparency of blocks
             GraphicsDevice.DepthStencilState.DepthBufferWriteEnable = true;
             GraphicsDevice.DepthStencilState.DepthBufferEnable = true;
+
 
             if (DebugSettings.RenderWireframe)
             {
@@ -199,6 +213,18 @@ namespace Client
 
             RaiseDraw3DEvent(gameTime, GraphicsDevice);
             RaiseDraw2DEvent(gameTime, SpriteBatch); // Draw 2D components over 3D.
+            if (!InputAllowed) // Paused
+            {
+                SpriteBatch.Begin(SpriteSortMode.FrontToBack, BlendState.AlphaBlend);
+
+                // Draw rectangle over screen
+                SpriteBatch.Draw(EmptyTexture,
+                    new Rectangle(0, 0, Viewport.Width, Viewport.Height),
+                    new Color(Color.Blue, 25)); // 50% transparency 
+
+
+                SpriteBatch.End();
+            }
             base.Draw(gameTime);
         }
     }
