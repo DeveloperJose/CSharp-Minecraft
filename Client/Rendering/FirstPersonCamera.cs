@@ -12,7 +12,7 @@ namespace Client.Rendering
         /// Debug feature: Controls the texture atlas's X position for Bricks.
         /// That lets me see how each blocks looks like by clicking a button
         /// </summary>
-        public static int X = 0;
+        public static int X = 7;
         /// <summary>
         /// Debug feature: Controls the texture atlas's Y position for Bricks.
         /// That lets me see how each blocks looks like by clicking a button
@@ -182,13 +182,15 @@ namespace Client.Rendering
                     Y--;
                 if (CurrentKeyboardState.IsKeyDown(Keys.Space) && !IsJumping)
                 {
-                    moveVector.Y = 1;
+                    moveVector.Y = 12;
                     IsJumping = true;
                 }
+                if (CurrentKeyboardState.IsKeyDown(Keys.Enter))
+                {
+                    Client.MainWorld[Vector3I.Zero] = Client.MainWorld[Vector3I.Zero];
+                }
             }
-            
-            // TODO: Eliminate this constant world updating.
-            Client.MainWorld[Vector3I.Zero] = Client.MainWorld[Vector3I.Zero];
+
             
             // Gravity
             //UpdateGravity(gameTime);
@@ -196,13 +198,13 @@ namespace Client.Rendering
             if (moveVector != Vector3.Zero) // If we moved
             {
                 // We must normalize the vector (make it of unit length (1))
-                moveVector.Normalize();
+                //moveVector.Normalize();
                 // Now add in our camera speed and delta time
                 moveVector *= MovementSpeed * dt;
-                if (IsJumping)
-                {
-                    moveVector.Y += 10;
-                }
+                //if (IsJumping)
+                //{
+                //    moveVector.Y += 10;
+                //}
                 //This is for checking movement parameters
                 Vector3 newLoc = PreviewMove(moveVector);
                 Vector3I location = new Vector3I(newLoc) / 2;

@@ -17,7 +17,33 @@ namespace Client
         /// <returns>True if the should be rendered.</returns>
         public static bool Visible(this Block b)
         {
-            return (b.ID != (byte)BlockID.Air && b.ID != (byte)BlockID.None);
+            switch ((BlockID)b.ID)
+            {
+                case BlockID.Air:
+                case BlockID.None:
+                case BlockID.Leaves:
+                case BlockID.RedFlower:
+                case BlockID.YellowFlower:
+                case BlockID.RedMushroom:
+                case BlockID.BrownMushroom:
+                    return false;
+                default:
+                    return true;
+            }
+        }
+        public static bool Transparent(this Block b)
+        {
+            switch ((BlockID)b.ID)
+            {
+                case BlockID.Leaves:
+                case BlockID.RedFlower:
+                case BlockID.YellowFlower:
+                case BlockID.RedMushroom:
+                case BlockID.BrownMushroom:
+                    return true;
+                default:
+                    return false;
+            }
         }
         /// <summary>
         /// Creates the UV mapping of a block.
@@ -106,7 +132,7 @@ namespace Client
                 case BlockID.Log:
                     break;
                 case BlockID.Leaves:
-                    break;
+                    return new Vector2(1, 6);
                 case BlockID.Sponge:
                     break;
                 case BlockID.Glass:
@@ -169,10 +195,8 @@ namespace Client
                     break;
                 case BlockID.Obsidian:
                     break;
-                default:
-                    return new Vector2(1, 6);
             }
-            return new Vector2(1, 6);
+            return new Vector2(6, 0);
         }
     }
 }

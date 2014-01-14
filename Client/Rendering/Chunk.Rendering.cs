@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using Client.Rendering;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -39,35 +40,33 @@ namespace Client
         public Mesh CreateMesh()
         {
             List<VertexPositionNormalTexture> vertices = new List<VertexPositionNormalTexture>();
-
             for (int x = 0; x < SizeX; x++)
                 for (int y = 0; y < SizeY; y++)
                     for (int z = 0; z < SizeZ; z++)
                     {
                         Vector3I Position = new Vector3I(x, y, z);
-                        
-                        if (this[Position].Visible())
+
+                        if (this[Position].Visible() || this[Position].Transparent())
                         {
                             Vector3 size = new Vector3(1, 1, 1);
-                            if (this[Position].ID == (byte)BlockID.RedFlower)
-                            {
-                                size = size / 4;
-                            }
-                            Vector3 realPos = new Vector3(Position.X, Position.Y, Position.Z) + ChunkPosition;
-                            Vector3 cubePos = new Vector3(realPos.X, realPos.Z, realPos.Y) * (2);
+                            BlockID id = (BlockID)this[Position].ID;
+                            
+                            Vector3 realPos = new Vector3(Position.X, Position.Y, Position.Z) + ChunkPosition; // Array position
+                            Vector3 cubePos = new Vector3(realPos.X, realPos.Z, realPos.Y) * (2); // View position
 
                             // Top face
                             Vector3 topLeftFront = cubePos + new Vector3(-1.0f, 1.0f, -1.0f) * size;
                             Vector3 topLeftBack = cubePos + new Vector3(-1.0f, 1.0f, 1.0f) * size;
                             Vector3 topRightFront = cubePos + new Vector3(1.0f, 1.0f, -1.0f) * size;
                             Vector3 topRightBack = cubePos + new Vector3(1.0f, 1.0f, 1.0f) * size;
-                            
+
                             // Calculate the cubePos of the vertices on the bottom face.
                             Vector3 btmLeftFront = cubePos + new Vector3(-1.0f, -1.0f, -1.0f) * size;
                             Vector3 btmLeftBack = cubePos + new Vector3(-1.0f, -1.0f, 1.0f) * size;
                             Vector3 btmRightFront = cubePos + new Vector3(1.0f, -1.0f, -1.0f) * size;
                             Vector3 btmRightBack = cubePos + new Vector3(1.0f, -1.0f, 1.0f) * size;
 
+                            /* Start of Vertices */
                             if (!this[x, y, z + 1].Visible())
                             {
                                 UVMap uv = this[x, y, z].CreateUVMapping(Direction.Top);
@@ -92,7 +91,7 @@ namespace Client
                                 vertices.Add(new VertexPositionNormalTexture(btmRightFront, normalBottom, uv.TopRight));
                             }
                             //if (!this[x, y, z + 1).Visible)
-                            if (!this[x, y + 1, z].Visible())
+                            if (!this[x, y + 1, z].Visible() || this[x, y + 1, z].Transparent())
                             {
                                 UVMap uv = this[x, y, z].CreateUVMapping(Direction.Back);
                                 // Add the vertices for the BACK face.
@@ -137,11 +136,12 @@ namespace Client
                                 vertices.Add(new VertexPositionNormalTexture(topRightFront, normalRight, uv.TopLeft));
                                 vertices.Add(new VertexPositionNormalTexture(btmRightBack, normalRight, uv.BottomRight));
                             }
+                            /* End of Vertices */
                         }
                     }
             Mesh ret = new Mesh()
             {
-                Vertices = vertices.ToArray(),
+                Vertices = vertices.ToArray()
             };
             vertices.Clear();
             return ret;

@@ -9,7 +9,7 @@ namespace Client
             // Transparency
             AlphaTestEffect effect = new AlphaTestEffect(e.GraphicsDevice);
             effect.Texture = Client.Terrain;
-            
+            //effect.ReferenceAlpha = 1;
             if (DebugSettings.RenderWireframe)
                 effect.Texture = Client.EmptyTexture;
             
@@ -26,7 +26,6 @@ namespace Client
                             Chunks[x, y, z].Draw(e.GraphicsDevice);
                         }
                     }
-            effect.End();
         }
     }
 }

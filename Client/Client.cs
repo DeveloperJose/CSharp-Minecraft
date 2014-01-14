@@ -17,6 +17,7 @@ namespace Client
     /// </summary>
     public sealed partial class Client : Game
     {
+        public static GraphicsDevice ClientGraphics { get; set; }
         public static readonly string Version = "v0.1.0";
         public static bool InputAllowed { get; set; }
         private GraphicsDeviceManager Graphics { get; set; }
@@ -78,8 +79,8 @@ namespace Client
             GameWindow = Window;
             IsMouseVisible = false;
             InputAllowed = true;
-            Window.Title = "HC(HexaClassic) Client by Gamemakergm - " + Version;
-            
+            Window.Title = "[HexaClassic]HC Client by Gamemakergm - " + Version;
+            ClientGraphics = GraphicsDevice;
         }
 
         /// <summary>
@@ -104,7 +105,7 @@ namespace Client
                         if (x == 17 && y == 16 && z == 5)
                             MainWorld[x, y, z] = new Block(BlockID.Bricks);
                         else if (x == 16 && y == 16 && z == 5)
-                            MainWorld[x, y, z] = new Block(BlockID.Obsidian);
+                            MainWorld[x, y, z] = new Block(BlockID.Leaves);
                         else if (z == 0)
                             MainWorld[x, y, z] = new Block(BlockID.Admincrete);
                         else if (z == 1)
@@ -190,13 +191,9 @@ namespace Client
         protected override void Draw(GameTime gameTime)
         {
             GraphicsDevice.Clear(Color.CornflowerBlue);
-
-            GraphicsDevice.BlendState = BlendState.Opaque;
-            // Enables transparency of blocks
+            //// Enables transparency of blocks
             GraphicsDevice.DepthStencilState.DepthBufferWriteEnable = true;
             GraphicsDevice.DepthStencilState.DepthBufferEnable = true;
-
-
             if (DebugSettings.RenderWireframe)
             {
                 GraphicsDevice.RasterizerState = new RasterizerState() { FillMode = FillMode.WireFrame };
@@ -209,6 +206,7 @@ namespace Client
                 Filter = TextureFilter.Point,
 
             };
+            
             GraphicsDevice.SamplerStates[0] = s;
 
             RaiseDraw3DEvent(gameTime, GraphicsDevice);
@@ -224,6 +222,11 @@ namespace Client
 
 
                 SpriteBatch.End();
+                this.IsMouseVisible = true;
+            }
+            else
+            {
+                this.IsMouseVisible = false;
             }
             base.Draw(gameTime);
         }
