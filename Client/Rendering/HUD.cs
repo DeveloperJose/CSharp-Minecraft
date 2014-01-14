@@ -40,8 +40,19 @@ namespace Client
 
             e.SpriteBatch.Begin();
 
-            if (Client.InputAllowed)
+            if (!Client.Paused)
             {
+                // Crosshair
+                e.SpriteBatch.Draw(Client.CrosshairTexture,
+                    Client.WindowCenter, // Center of screen
+                    null, // Source rectangle
+                    Color.White, // Color
+                    0f, // Rotation
+                    new Vector2(Client.CrosshairTexture.Width, Client.CrosshairTexture.Height) / 2, // Image center
+                    1f, // Scale
+                    SpriteEffects.None,
+                    0f // Depth
+                    );
                 string fps = string.Format("FPS: {0}", frameRate);
                 e.SpriteBatch.DrawString(Client.Font, fps, Vector2.Zero, Color.White);
 
@@ -50,24 +61,20 @@ namespace Client
                 e.SpriteBatch.DrawString(Client.Font, posText, new Vector2(0, 14), Color.White);
 
                 Vector3I underPos = pos; //- Client.MainPlayer.Head;
-                underPos = new Vector3I(underPos.X, underPos.Y, underPos.Z) - new Vector3I(0, 0, 3);
+                underPos = new Vector3I(underPos.X, underPos.Y, underPos.Z - 1);
                 BlockID b = Client.MainWorld[underPos];
                 string blockUnder = string.Format("Under: {0}", b);
                 e.SpriteBatch.DrawString(Client.Font, blockUnder, new Vector2(0, 28), Color.White);
 
-                for (float x = 0.5f; x < 5f; x += 0.2f)
+                for (float x = 0.5f; x < 10f; x += 0.2f)
                 {
-                    //Client.MainPlayer.Camera.Target;
-                    Vector3 targetPoint = (Client.MainPlayer.Camera.Target * x);
+                    Vector3 targetPoint = Client.MainPlayer.Camera.Position + (Client.MainPlayer.Camera.LookVector * x);
                     Vector3I worldPos = targetPoint.ToBlockCoords();
                     BlockID id = Client.MainWorld[worldPos];
-                    if (id != BlockID.None)
+                    if (id != BlockID.None && id != BlockID.Air && targetPoint.Z > 1)
                     {
-                        if (targetPoint.Y > 2)
-                        {
-                            e.SpriteBatch.DrawString(Client.Font, "Pointing= " + id, new Vector2(0, 42), Color.White);
-                            break;
-                        }
+                        e.SpriteBatch.DrawString(Client.Font, "Pointing= " + id, new Vector2(0, 42), Color.White);
+                        break;
                     }
                 }
                 //Vector3I inFront = new Vector3I(pos) + new Vector3I(0, 1, 0);
@@ -80,11 +87,12 @@ namespace Client
             }
             else
             {
-                string text = "PAUSED: " + Client.Version;
-                e.SpriteBatch.DrawString(Client.Font, text, 
-                    Client.WindowCenter - (Client.Font.MeasureString(text) * 2),
-                    Color.White);
-                
+                //string text = "PAUSED: " + Client.Version;
+                //e.SpriteBatch.DrawString(Client.Font, text,
+                //    Client.WindowCenter - (Client.Font.MeasureString(text)),
+                //    Color.White);
+                AnchoredText t = new AnchoredText(Client.Font, "PAUSED: " + Client.Version, Client.WindowCenter, TextAnchor.MiddleCenter);
+                t.Draw(e.SpriteBatch);
             }
             e.SpriteBatch.End();
         }

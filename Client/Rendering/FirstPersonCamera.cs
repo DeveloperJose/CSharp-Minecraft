@@ -33,10 +33,6 @@ namespace Client.Rendering
         /// The nearest distance the camera will use
         /// </summary>
         public const float NearDistance = 0.05f;
-        /// <summary>
-        /// The furthest the camera can see
-        /// </summary>
-        public const float FarDistance = 100f;
         #endregion
 
         #region Player Variables
@@ -84,7 +80,15 @@ namespace Client.Rendering
                 return Matrix.CreateLookAt(Position, Target, Vector3.Up);
             }
         }
-        public Vector3 Target { get; set; }
+        public Vector3 Target { get; private set; }
+        public Vector3 LookVector { get; private set; }
+        public BoundingFrustum BoundingFrustum { get { return new BoundingFrustum(ViewMatrix * ProjectionMatrix); } }
+        /// <summary>
+        /// The furthest the camera can see
+        /// </summary>
+        public float FarDistance { get; private set; }
+        public float[] Distances = new float[] { 10f, 15f, 30f, 50f, 100f };
+        private int DistanceIndex = 0;
         #endregion
 
         #region Mouse
@@ -109,16 +113,17 @@ namespace Client.Rendering
             Position = position;
             Rotation = rotation;
 
+            FarDistance = 100f;
+
             //Setup the projection matrix
             ProjectionMatrix = Matrix.CreatePerspectiveFieldOfView(
-                MathHelper.PiOver4, 
-                Client.Viewport.AspectRatio, 
-                NearDistance, 
+                MathHelper.PiOver4,
+                Client.Viewport.AspectRatio,
+                NearDistance,
                 FarDistance);
 
             PrevMouseState = Mouse.GetState();
             PrevKeyboardState = Keyboard.GetState();
-            IsJumping = false;
         }
 
         /// <summary>
@@ -136,9 +141,10 @@ namespace Client.Rendering
             //Finally, build the camera's look at vector by adding
             //our current position and the look at vector offset.
             Target = Position + lookAtOffset;
+            LookVector = Vector3.Transform(Vector3.Backward, rotationMatrix);
+            LookVector.Normalize();
         }
-        private readonly float Gravity = -5f;
-        private readonly float Height = 0.62f;
+        private readonly float Gravity = -13f;
         /// <summary>
         /// Update the camera's physics
         /// </summary>
@@ -154,9 +160,9 @@ namespace Client.Rendering
             Vector3 moveVector = Vector3.Zero;
 
             if (CurrentKeyboardState.IsKeyUp(Keys.Escape) && PrevKeyboardState.IsKeyDown(Keys.Escape))
-                Client.InputAllowed = !Client.InputAllowed;
+                Client.Paused = !Client.Paused;
 
-            if (Client.InputAllowed)
+            if (!Client.Paused)
             {
                 if (CurrentKeyboardState.IsKeyDown(Keys.W))
                     moveVector.Z = 1; //cameraSpeed * dt;
@@ -189,36 +195,63 @@ namespace Client.Rendering
                 {
                     Client.MainWorld[Vector3I.Zero] = Client.MainWorld[Vector3I.Zero];
                 }
+                if (CurrentKeyboardState.IsKeyDown(Keys.NumPad3))
+                {
+                    PluginManager.Reload();
+                }
+                if (CurrentKeyboardState.IsKeyUp(Keys.F) && PrevKeyboardState.IsKeyDown(Keys.F))
+                {
+                    DistanceIndex++;
+                    if (DistanceIndex >= Distances.Length)
+                        DistanceIndex = 0;
+
+                    FarDistance = Distances[DistanceIndex];
+                    ProjectionMatrix = Matrix.CreatePerspectiveFieldOfView(
+                        MathHelper.PiOver4,
+                        Client.Viewport.AspectRatio,
+                        NearDistance,
+                        FarDistance);
+                }
             }
 
-            
+
             // Gravity
             //UpdateGravity(gameTime);
-            
+
             if (moveVector != Vector3.Zero) // If we moved
             {
                 // We must normalize the vector (make it of unit length (1))
                 //moveVector.Normalize();
                 // Now add in our camera speed and delta time
                 moveVector *= MovementSpeed * dt;
-                //if (IsJumping)
-                //{
-                //    moveVector.Y += 10;
-                //}
-                //This is for checking movement parameters
-                Vector3 newLoc = PreviewMove(moveVector);
-                Vector3I location = newLoc.ToBlockCoords();
+                Move(moveVector);
+                //Vector3 testVector = moveVector;
+                //testVector.Normalize();
+                //testVector = testVector * (moveVector.Length() + 0.3f);
 
-                if (Client.MainWorld.InBounds(location))
-                    Move(moveVector); // Now we move the camera using that movement vector
+                //Vector3I testPos = PreviewMove(testVector).ToBlockCoords();
+                //Vector3I bodyPos = PreviewMove(testVector - new Vector3(0, Player.Height, 0)).ToBlockCoords();
+
+                //if (!Client.MainWorld[testPos].Solid() || !Client.MainWorld[bodyPos].Solid())
+                //{
+                //    Vector3I newLoc = PreviewMove(moveVector).ToBlockCoords();
+                //    if (Client.MainWorld.InBounds(newLoc))
+                //    {
+                //        if (!Client.MainWorld[newLoc].Solid())
+                //            Move(moveVector); // Now we move the camera using that movement vector
+                //    }
+                //}
+
             }
 
             // Now try applying gravity
             Vector3 gravityVector = Vector3.Zero;
             gravityVector.Y += Gravity;
+
             gravityVector *= dt;
 
-            Vector3 gravLoc = PreviewMove(gravityVector);
+            Vector3 feetPos = new Vector3(0, Player.Height, 0); // We are talking in World coordinates here
+            Vector3 gravLoc = PreviewMove(gravityVector - feetPos);
             Vector3I worldLoc = gravLoc.ToBlockCoords();
 
             if (Client.MainWorld.InBounds(worldLoc))
@@ -233,7 +266,7 @@ namespace Client.Rendering
                     Move(gravityVector);
                 }
             }
-            if (Client.InputAllowed)
+            if (!Client.Paused)
             {
                 //Change in mouse position
                 //x and y

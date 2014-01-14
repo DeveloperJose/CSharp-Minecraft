@@ -8,7 +8,7 @@ namespace Client
         {
             // Transparency
             AlphaTestEffect effect = new AlphaTestEffect(e.GraphicsDevice);
-            effect.Texture = Client.Terrain;
+            effect.Texture = Client.TerrainTexture;
             //effect.ReferenceAlpha = 1;
             if (DebugSettings.RenderWireframe)
                 effect.Texture = Client.EmptyTexture;
@@ -20,7 +20,7 @@ namespace Client
                 for (int y = 0; y < Chunks.GetLength(1); y++)
                     for (int z = 0; z < Chunks.GetLength(2); z++)
                     {
-                        //if (.frustrum.Contains(Chunks[x, y, z].Box) != ContainmentType.Disjoint)
+                        if(Client.MainPlayer.Camera.BoundingFrustum.Intersects(Chunks[x,y,z].Box))
                         {
                             effect.CurrentTechnique.Passes[0].Apply();
                             Chunks[x, y, z].Draw(e.GraphicsDevice);

@@ -11,7 +11,8 @@ namespace Client
     public sealed class Player
     {
         //public ChaseCamera Camera;
-        public float Height = 0.62f;
+        public const float EyeLevel = 1.62f;
+        public const float Height = EyeLevel;
         public FirstPersonCamera Camera;
         public Player()
         {

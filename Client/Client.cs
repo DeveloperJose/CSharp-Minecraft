@@ -17,9 +17,8 @@ namespace Client
     /// </summary>
     public sealed partial class Client : Game
     {
-        public static GraphicsDevice ClientGraphics { get; set; }
         public static readonly string Version = "v0.1.0";
-        public static bool InputAllowed { get; set; }
+        public static bool Paused { get; internal set; }
         private GraphicsDeviceManager Graphics { get; set; }
         private SpriteBatch SpriteBatch { get; set; }
         /// <summary>
@@ -29,15 +28,15 @@ namespace Client
         /// <summary>
         /// The Main world.
         /// </summary>
-        public static World MainWorld { get; private set; }
+        public static World MainWorld { get; internal set; }
         /// <summary>
         /// This is us! The player.
         /// </summary>
-        public static Player MainPlayer { get; private set; }
+        public static Player MainPlayer { get; internal set; }
         /// <summary>
         /// The texture atlas for all blocks.
         /// </summary>
-        public static Texture2D Terrain { get; private set; }
+        public static Texture2D TerrainTexture { get; private set; }
         /// <summary>
         /// Our main debugging font!
         /// </summary>
@@ -56,7 +55,7 @@ namespace Client
                 return new Vector2(Viewport.Bounds.Width / 2, Viewport.Bounds.Height / 2);
             }
         }
-        
+
         /// <summary>
         /// The window for the current game.
         /// </summary>
@@ -70,17 +69,37 @@ namespace Client
         private AudioEmitter AudioEmitter { get; set; }
         private AudioListener AudioListener { get; set; }
         private Vector3 ObjectPos { get; set; }
+
+        private static IState _currentState;
+        public static IState CurrentState
+        {
+            get { return _currentState; }
+            set
+            {
+                if (_currentState != null)
+                    _currentState.Stop();
+
+                _currentState = value;
+                _currentState.Init();
+            }
+        }
+        public static Texture2D CrosshairTexture { get; private set; }
         public Client()
             : base()
         {
             Graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
+            Window.Title = "[HexaClassic]HC Client by Gamemakergm - " + Version;
+            IsMouseVisible = false;
+            // When we lose focus
+            Deactivated += (sender, e) =>
+            {
+                Paused = true;
+            };
             Viewport = GraphicsDevice.Viewport;
             GameWindow = Window;
-            IsMouseVisible = false;
-            InputAllowed = true;
-            Window.Title = "[HexaClassic]HC Client by Gamemakergm - " + Version;
-            ClientGraphics = GraphicsDevice;
+            Paused = true;
+            CurrentState = new MainState();
         }
 
         /// <summary>
@@ -91,34 +110,8 @@ namespace Client
         /// </summary>
         protected override void Initialize()
         {
-            // TODO: Allow external plugins.
-            PluginManager.Init();
             EmptyTexture = new Texture2D(GraphicsDevice, 1, 1);
             EmptyTexture.SetData<Color>(new Color[] { Color.White });
-
-            // Temp. Level generation.
-            MainWorld = new World(32, 32, 32);
-            for (int x = 0; x < MainWorld.Length; x++)
-                for (int y = 0; y < MainWorld.Width; y++)
-                    for (int z = 0; z < MainWorld.Height; z++)
-                    {
-                        if (x == 17 && y == 16 && z == 5)
-                            MainWorld[x, y, z] = BlockID.Bricks;
-                        else if (x == 16 && y == 16 && z == 5)
-                            MainWorld[x, y, z] = BlockID.Leaves;
-                        else if (z == 0)
-                            MainWorld[x, y, z] = BlockID.Admincrete;
-                        else if (z == 1)
-                            MainWorld[x, y, z] = BlockID.Stone;
-                        else if (z == 2)
-                            MainWorld[x, y, z] = BlockID.Dirt;
-                        else if (z == 3)
-                            MainWorld[x, y, z] = BlockID.Grass;
-                        else
-                            MainWorld[x, y, z] = BlockID.Air;
-
-                    }
-            MainPlayer = new Player();
             base.Initialize();
         }
         /// <summary>
@@ -130,11 +123,10 @@ namespace Client
             // Create a new SpriteBatch, which can be used to draw textures.
             SpriteBatch = new SpriteBatch(GraphicsDevice);
 
-            Terrain = Content.Load<Texture2D>("terrain");
+            TerrainTexture = Content.Load<Texture2D>("terrain");
             Font = Content.Load<SpriteFont>("MainFont");
             Char = Content.Load<Texture2D>("char");
-            RaiseLoadEvent(Content);
-
+            CrosshairTexture = Content.Load<Texture2D>("Crosshair");
             Mob player = new Mob(Char, Vector3I.Zero);
 
             Calm1 = Content.Load<SoundEffect>("calm1");
@@ -149,6 +141,8 @@ namespace Client
             Calm1Instance.Volume = 1f; // Full volume.
             Calm1Instance.Play();
 
+
+            RaiseLoadEvent(Content);
         }
 
         /// <summary>
@@ -169,7 +163,7 @@ namespace Client
         {
             /*if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();*/
-
+            IsMouseVisible = Paused;
             RaiseUpdateEvent(gameTime);
 
             // Move the sound in a circle
@@ -206,28 +200,11 @@ namespace Client
                 Filter = TextureFilter.Point,
 
             };
-            
+
             GraphicsDevice.SamplerStates[0] = s;
 
             RaiseDraw3DEvent(gameTime, GraphicsDevice);
             RaiseDraw2DEvent(gameTime, SpriteBatch); // Draw 2D components over 3D.
-            if (!InputAllowed) // Paused
-            {
-                SpriteBatch.Begin(SpriteSortMode.FrontToBack, BlendState.AlphaBlend);
-
-                // Draw rectangle over screen
-                SpriteBatch.Draw(EmptyTexture,
-                    new Rectangle(0, 0, Viewport.Width, Viewport.Height),
-                    new Color(Color.Blue, 25)); // 50% transparency 
-
-
-                SpriteBatch.End();
-                this.IsMouseVisible = true;
-            }
-            else
-            {
-                this.IsMouseVisible = false;
-            }
             base.Draw(gameTime);
         }
     }

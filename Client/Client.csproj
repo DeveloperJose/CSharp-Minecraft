@@ -40,10 +40,12 @@
     <Compile Include="ChaseCamera.cs" />
     <Compile Include="Client.cs" />
     <Compile Include="Client.Events.cs" />
+    <Compile Include="IState.cs" />
     <Compile Include="Plugin\IListener.cs" />
     <Compile Include="Player\Mob.cs" />
     <Compile Include="Rendering\FirstPersonCamera.cs" />
     <Compile Include="Rendering\Mouse.Render.cs" />
+    <Compile Include="Util\AnchoredText.cs" />
     <Compile Include="Util\Mesh.cs" />
     <Compile Include="Util\Vector3I.cs" />
     <Compile Include="World\BlockID.cs" />
