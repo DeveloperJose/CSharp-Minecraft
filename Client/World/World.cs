@@ -12,12 +12,12 @@ namespace Client
         public readonly int Width;
         public readonly int Height;
         private Chunk[, ,] Chunks;
-        public Block this[Vector3I pos]
+        public BlockID this[Vector3I pos]
         {
             get { return this[pos.X, pos.Y, pos.Z]; }
             set { this[pos.X, pos.Y, pos.Z] = value; }
         }
-        public Block this[int x, int y, int z]
+        public BlockID this[int x, int y, int z]
         {
             get
             {
@@ -32,7 +32,7 @@ namespace Client
                 if (chunkX < 0 || chunkX >= Chunks.GetLength(0)
                     || chunkY < 0 || chunkY >= Chunks.GetLength(1)
                     || chunkZ < 0 || chunkZ >= Chunks.GetLength(2))
-                    return new Block(BlockID.None); // Chunk outside of bounds.
+                    return BlockID.None; // Chunk outside of bounds.
 
                 Chunk chunk = Chunks[chunkX, chunkY, chunkZ];
                 // This figures out the coordinate of the block relative to chunk.

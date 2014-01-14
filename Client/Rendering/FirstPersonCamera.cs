@@ -84,7 +84,7 @@ namespace Client.Rendering
                 return Matrix.CreateLookAt(Position, Target, Vector3.Up);
             }
         }
-        private Vector3 Target { get; set; }
+        public Vector3 Target { get; set; }
         #endregion
 
         #region Mouse
@@ -167,7 +167,7 @@ namespace Client.Rendering
                 if (CurrentKeyboardState.IsKeyDown(Keys.D))
                     moveVector.X = -1;//cameraSpeed * dt;
                 if (CurrentKeyboardState.IsKeyDown(Keys.R))
-                    MoveTo(Client.MainWorld.Spawn, Vector3.Zero);
+                    MoveTo(Client.MainWorld.Spawn.ToRenderCoords(), Vector3.Zero);
                 if (CurrentKeyboardState.IsKeyDown(Keys.Q))
                     moveVector.Y = 1;
                 if (CurrentKeyboardState.IsKeyDown(Keys.E))
@@ -207,7 +207,7 @@ namespace Client.Rendering
                 //}
                 //This is for checking movement parameters
                 Vector3 newLoc = PreviewMove(moveVector);
-                Vector3I location = new Vector3I(newLoc) / 2;
+                Vector3I location = newLoc.ToBlockCoords();
 
                 if (Client.MainWorld.InBounds(location))
                     Move(moveVector); // Now we move the camera using that movement vector
@@ -219,11 +219,11 @@ namespace Client.Rendering
             gravityVector *= dt;
 
             Vector3 gravLoc = PreviewMove(gravityVector);
-            Vector3I worldLoc = new Vector3I(gravLoc) / 2;
+            Vector3I worldLoc = gravLoc.ToBlockCoords();
 
             if (Client.MainWorld.InBounds(worldLoc))
             {
-                if (Client.MainWorld[worldLoc].Solid)
+                if (Client.MainWorld[worldLoc].Solid())
                 {
                     if (IsJumping)
                         IsJumping = false;

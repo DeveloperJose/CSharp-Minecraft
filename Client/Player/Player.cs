@@ -17,7 +17,7 @@ namespace Client
         {
             Client.OnUpdate += Update;
             //Camera = new ChaseCamera(Client.MainWorld.Spawn);
-            Camera = new FirstPersonCamera(Client.MainWorld.Spawn, Vector3.Zero);
+            Camera = new FirstPersonCamera(Client.MainWorld.Spawn.ToRenderCoords(), Vector3.Zero);
         }
         public void Update(object sender, UpdateEventArgs e)
         {

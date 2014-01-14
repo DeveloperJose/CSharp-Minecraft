@@ -9,19 +9,18 @@ namespace Client
 {
     public static class RenderExtensions
     {
-        /// <summary>
-        /// Determines if a block should be rendered.
-        /// If true then the block is visible.
-        /// </summary>
-        /// <param name="b">Block to check.</param>
-        /// <returns>True if the should be rendered.</returns>
-        public static bool Visible(this Block b)
+        public static Vector3I ToBlockCoords(this Vector3 renderPos)
         {
-            switch ((BlockID)b.ID)
+            renderPos /= 2;
+            return new Vector3I(renderPos.X, renderPos.Z, renderPos.Y); // Reverse
+        }
+        public static bool Solid(this BlockID b)
+        {
+            switch (b)
             {
                 case BlockID.Air:
                 case BlockID.None:
-                case BlockID.Leaves:
+                case BlockID.Sapling:
                 case BlockID.RedFlower:
                 case BlockID.YellowFlower:
                 case BlockID.RedMushroom:
@@ -31,15 +30,39 @@ namespace Client
                     return true;
             }
         }
-        public static bool Transparent(this Block b)
+        /// <summary>
+        /// Determines if a block should be rendered.
+        /// If true then the block is visible.
+        /// </summary>
+        /// <param name="b">Block to check.</param>
+        /// <returns>True if the should be rendered.</returns>
+        public static bool Visible(this BlockID b)
         {
-            switch ((BlockID)b.ID)
+            /*
+             * To properly render transparent blocks other blocks must treat them as invisible.
+             * That way we can see through it.
+             */
+            if (Transparent(b)) return false;
+            switch (b)
+            {
+                case BlockID.Air:
+                case BlockID.None:
+
+                    return false;
+                default:
+                    return true;
+            }
+        }
+        public static bool Transparent(this BlockID b)
+        {
+            switch (b)
             {
                 case BlockID.Leaves:
                 case BlockID.RedFlower:
                 case BlockID.YellowFlower:
                 case BlockID.RedMushroom:
                 case BlockID.BrownMushroom:
+                case BlockID.Glass:
                     return true;
                 default:
                     return false;
@@ -51,22 +74,21 @@ namespace Client
         /// <param name="b">The block to get the mapping of.</param>
         /// <param name="d">The direction of the block to render.</param>
         /// <returns>UVMap representing the UV mapping of the current block.</returns>
-        public static UVMap CreateUVMapping(this Block b, Direction d)
+        internal static UVMap CreateUVMapping(this BlockID b, Direction d)
         {
             /*
+             * Cheat Sheet
              * x * 2^y = x << y
              * x / 2^y = x >> y      - Except that / rounds up for negatives, and >> always rounds down
              * x % 2^y = x & (2^y - 1)
              */
-            // Same as Y % 256
+            // Same as X % 256
             // 256 = (2^16) = 1 << 16
             // x % 256 = x & (256 - 1)
             // x % 256 = x & ((1 << 16) - 1)
             float x = ((int)b.TileVector(d).Y & ((1 << 16) - 1)) * Settings.Offset; // U
-            // Same as X / 256
-            // x / 256 = x >> 16
-            //float y = ((int)b.TileVector(d).X >> 16) * Settings.Offset; // V
             float y = ((int)b.TileVector(d).X & ((1 << 16) - 1)) * Settings.Offset;
+
             return new UVMap(
                 new Vector2(x + Settings.Offset, y),
                 new Vector2(x, y),
@@ -80,10 +102,10 @@ namespace Client
         /// <param name="b">Block to get the texture of.</param>
         /// <param name="d">Direction of the face to get the texture of.</param>
         /// <returns>Vector2 representing the location of the texture in the texture atlas.</returns>
-        public static Vector2 TileVector(this Block b, Direction d)
+        internal static Vector2 TileVector(this BlockID b, Direction d)
         {
             // The texture atlas is 256x256, we divide it in 16x16 sections. There are 256 textures in total. 16 rows and 16 columns.
-            switch ((BlockID)b.ID)
+            switch (b)
             {
                 case BlockID.Stone:
                     return new Vector2(0, 1);

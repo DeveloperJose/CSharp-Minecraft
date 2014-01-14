@@ -103,19 +103,19 @@ namespace Client
                     for (int z = 0; z < MainWorld.Height; z++)
                     {
                         if (x == 17 && y == 16 && z == 5)
-                            MainWorld[x, y, z] = new Block(BlockID.Bricks);
+                            MainWorld[x, y, z] = BlockID.Bricks;
                         else if (x == 16 && y == 16 && z == 5)
-                            MainWorld[x, y, z] = new Block(BlockID.Leaves);
+                            MainWorld[x, y, z] = BlockID.Leaves;
                         else if (z == 0)
-                            MainWorld[x, y, z] = new Block(BlockID.Admincrete);
+                            MainWorld[x, y, z] = BlockID.Admincrete;
                         else if (z == 1)
-                            MainWorld[x, y, z] = new Block(BlockID.Stone);
+                            MainWorld[x, y, z] = BlockID.Stone;
                         else if (z == 2)
-                            MainWorld[x, y, z] = new Block(BlockID.Dirt);
+                            MainWorld[x, y, z] = BlockID.Dirt;
                         else if (z == 3)
-                            MainWorld[x, y, z] = new Block(BlockID.Grass);
+                            MainWorld[x, y, z] = BlockID.Grass;
                         else
-                            MainWorld[x, y, z] = new Block(BlockID.Air);
+                            MainWorld[x, y, z] = BlockID.Air;
 
                     }
             MainPlayer = new Player();

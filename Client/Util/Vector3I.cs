@@ -16,12 +16,22 @@ namespace Client
             Y = y;
             Z = z;
         }
-        public Vector3I(Vector3 v)
+        public Vector3I(float x, float y, float z)
         {
-            X = (int)v.X;
-            Y = (int)v.Z; // Reverse
-            Z = (int)v.Y;
+            X = (int)x;
+            Y = (int)y;
+            Z = (int)z;
         }
+        public Vector3 ToRenderCoords()
+        {
+            return new Vector3(X, Z, Y) * 2; // Because XNA, that's why.
+        }
+        //public Vector3I(Vector3 v)
+        //{
+        //    X = (int)v.X;
+        //    Y = (int)v.Z; // Reverse
+        //    Z = (int)v.Y;
+        //}
         public static Vector3I operator +(Vector3I a, Vector3I b)
         {
             return new Vector3I(a.X + b.X, a.Y + b.Y, a.Z + b.Z);
@@ -33,10 +43,6 @@ namespace Client
         public static Vector3I operator /(Vector3I a, int scalar)
         {
             return new Vector3I(a.X / scalar, a.Y / scalar, a.Z / scalar);
-        }
-        public static implicit operator Vector3(Vector3I v)
-        {
-            return new Vector3(v.X, v.Z, v.Y); // Reverse Y and Z
         }
     }
 }

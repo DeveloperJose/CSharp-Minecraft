@@ -5,6 +5,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 namespace Client
 {
+
     public sealed partial class Chunk
     {
         public void Draw(GraphicsDevice device)
@@ -29,6 +30,7 @@ namespace Client
                 }
             }
         }
+        
         // Normal vectors for each face (needed for lighting / display)
         private static readonly Vector3 normalFront = new Vector3(0.0f, 0.0f, 1.0f);
         private static readonly Vector3 normalBack = new Vector3(0.0f, 0.0f, -1.0f);
@@ -46,13 +48,13 @@ namespace Client
                     {
                         Vector3I Position = new Vector3I(x, y, z);
 
-                        if (this[Position].Visible() || this[Position].Transparent())
+                        if (this[Position].Visible()
+                            || this[Position].Transparent()) // We still want to render them to see them.
                         {
                             Vector3 size = new Vector3(1, 1, 1);
-                            BlockID id = (BlockID)this[Position].ID;
                             
                             Vector3 realPos = new Vector3(Position.X, Position.Y, Position.Z) + ChunkPosition; // Array position
-                            Vector3 cubePos = new Vector3(realPos.X, realPos.Z, realPos.Y) * (2); // View position
+                            Vector3 cubePos = new Vector3(realPos.X, realPos.Z, realPos.Y) * 2; // View position
 
                             // Top face
                             Vector3 topLeftFront = cubePos + new Vector3(-1.0f, 1.0f, -1.0f) * size;

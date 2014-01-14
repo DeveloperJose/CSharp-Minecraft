@@ -7,8 +7,10 @@ namespace Client
 {
     public static class PluginManager
     {
+        public static List<string> LoadedPlugins { get; private set; }
         public static void Init()
         {
+            LoadedPlugins = new List<string>();
             // Load plugins from this assembly first.
             foreach (Type t in Assembly.GetEntryAssembly().GetTypes())
             {
@@ -20,6 +22,7 @@ namespace Client
                     {
                         IListener plugin = (IListener)Activator.CreateInstance(t);
                         plugin.Init();
+                        LoadedPlugins.Add(t.Name);
                     }
                 }
             }

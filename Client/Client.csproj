@@ -43,9 +43,9 @@
     <Compile Include="Plugin\IListener.cs" />
     <Compile Include="Player\Mob.cs" />
     <Compile Include="Rendering\FirstPersonCamera.cs" />
+    <Compile Include="Rendering\Mouse.Render.cs" />
     <Compile Include="Util\Mesh.cs" />
     <Compile Include="Util\Vector3I.cs" />
-    <Compile Include="World\Block.cs" />
     <Compile Include="World\BlockID.cs" />
     <Compile Include="DebugSettings.cs" />
     <Compile Include="Util\Direction.cs" />

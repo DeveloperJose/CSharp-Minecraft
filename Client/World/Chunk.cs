@@ -33,23 +33,23 @@ namespace Client
             bool checkZ = z < 0 || z >= SizeZ;
             return !(checkX || checkY || checkZ);
         }
-        public Block this[int x, int y, int z]
+        public BlockID this[int x, int y, int z]
         {
             get
             {
                 if (!InBounds(x, y, z))
-                    return new Block(BlockID.Air);
-                return new Block(Blocks[x, y, z]);
+                    return BlockID.Air;
+                return (BlockID)Blocks[x, y, z];
             }
             set
             {
                 if (!InBounds(x, y, z))
                     Parent[x + (int)ChunkPosition.X, y + (int)ChunkPosition.Y, z + (int)ChunkPosition.Z] = value; // It's outside this chunk.
-                Blocks[x, y, z] = value.ID;
+                Blocks[x, y, z] = (byte)value;
                 UpdateNeeded = true;
             }
         }
-        public Block this[Vector3I pos]
+        public BlockID this[Vector3I pos]
         {
             get
             {
