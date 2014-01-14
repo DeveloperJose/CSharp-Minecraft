@@ -7,7 +7,7 @@ using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Graphics;
 namespace Client
 {
-    public sealed class HUD : IListener
+    public sealed class HUD : IPlugin
     {
         int frameRate = 0;
         int frameCounter = 0;
@@ -17,6 +17,11 @@ namespace Client
         {
             Client.OnUpdate += Update;
             Client.OnDraw2D += Draw2D;
+        }
+        public void Stop()
+        {
+            Client.OnUpdate -= Update;
+            Client.OnDraw2D -= Draw2D;
         }
         public void Update(object sender, UpdateEventArgs e)
         {

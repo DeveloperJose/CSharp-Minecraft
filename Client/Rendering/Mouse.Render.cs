@@ -7,7 +7,7 @@ using Microsoft.Xna.Framework;
 using Client;
 namespace Client.Rendering
 {
-    public class MouseRendering : IListener
+    public class MouseRendering
     {
         public void Init()
         {

@@ -7,25 +7,40 @@ namespace Client
 {
     public static class PluginManager
     {
-        public static List<string> LoadedPlugins { get; private set; }
+        public static List<IPlugin> LoadedPlugins { get; private set; }
         public static void Init()
         {
-            LoadedPlugins = new List<string>();
+            LoadedPlugins = new List<IPlugin>();
             // Load plugins from this assembly first.
             foreach (Type t in Assembly.GetEntryAssembly().GetTypes())
             {
-                if (typeof(IListener).IsAssignableFrom(t))
+                if (typeof(IPlugin).IsAssignableFrom(t))
                 {
-                    //dynamic plugin = Activator.CreateInstance(t);
-                    //plugin.Init();
-                    if (!t.Equals(typeof(IListener)))
+                    if (!t.Equals(typeof(IPlugin)))
                     {
-                        IListener plugin = (IListener)Activator.CreateInstance(t);
+                        IPlugin plugin = (IPlugin)Activator.CreateInstance(t);
                         plugin.Init();
-                        LoadedPlugins.Add(t.Name);
+                        if (!LoadedPlugins.Contains(plugin))
+                        {
+                            LoadedPlugins.Add(plugin);
+                        }
                     }
                 }
             }
+        }
+        public static void Stop()
+        {
+            foreach (IPlugin plugin in LoadedPlugins)
+            {
+                plugin.Stop();
+            }
+            LoadedPlugins.Clear();
+            Init();
+        }
+        public static void Reload()
+        {
+            Stop();
+            Init();
         }
     }
 }
