@@ -1,25 +1,13 @@
-﻿using Microsoft.Xna.Framework;
+﻿using System;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 namespace Client.Rendering
 {
     /// <summary>
     /// The main player's camera
     /// </summary>
-    public sealed class FirstPersonCamera
+    public sealed class FirstPersonCamera : Camera
     {
-        #region Debug
-        /// <summary>
-        /// Debug feature: Controls the texture atlas's X position for Bricks.
-        /// That lets me see how each blocks looks like by clicking a button
-        /// </summary>
-        public static int X = 7;
-        /// <summary>
-        /// Debug feature: Controls the texture atlas's Y position for Bricks.
-        /// That lets me see how each blocks looks like by clicking a button
-        /// </summary>
-        public static int Y = 0;
-        #endregion
-
         #region Constants
         /// <summary>
         /// The mouse movement speed
@@ -35,61 +23,17 @@ namespace Client.Rendering
         public const float NearDistance = 0.05f;
         #endregion
 
-        #region Player Variables
         /// <summary>
         /// Are we jumping right now?
         /// </summary>
         public bool IsJumping { get; set; }
-        #endregion
-
-        #region Camera Variables
-        /// <summary>
-        /// Our current position.
-        /// </summary>
-        public Vector3 Position
-        {
-            get { return _position; }
-            set
-            {
-                _position = value;
-                // Must update.
-                UpdateLookAt();
-            }
-        }
-        private Vector3 _position;
-
-        /// <summary>
-        /// Our current rotation
-        /// </summary>
-        public Vector3 Rotation
-        {
-            get { return _rotation; }
-            set
-            {
-                _rotation = value;
-                UpdateLookAt();
-            }
-        }
-        private Vector3 _rotation;
-
-        public Matrix ProjectionMatrix { get; set; }
-        public Matrix ViewMatrix
-        {
-            get
-            {
-                return Matrix.CreateLookAt(Position, Target, Vector3.Up);
-            }
-        }
-        public Vector3 Target { get; private set; }
-        public Vector3 LookVector { get; private set; }
-        public BoundingFrustum BoundingFrustum { get { return new BoundingFrustum(ViewMatrix * ProjectionMatrix); } }
+   
         /// <summary>
         /// The furthest the camera can see
         /// </summary>
         public float FarDistance { get; private set; }
         public float[] Distances = new float[] { 10f, 15f, 30f, 50f, 100f };
         private int DistanceIndex = 0;
-        #endregion
 
         #region Mouse
         private Vector3 MouseRotationBuffer;
@@ -108,10 +52,10 @@ namespace Client.Rendering
         /// </summary>
         /// <param name="position">Starting position</param>
         /// <param name="rotation">Starting rotation</param>
-        public FirstPersonCamera(Vector3 position, Vector3 rotation)
+        public FirstPersonCamera()
         {
-            Position = position;
-            Rotation = rotation;
+            Position = Client.MainWorld.Spawn.ToRenderCoords();
+            Rotation = Vector3.Zero;
 
             FarDistance = 100f;
 
@@ -126,24 +70,7 @@ namespace Client.Rendering
             PrevKeyboardState = Keyboard.GetState();
         }
 
-        /// <summary>
-        /// Updates the camera's looking vector.
-        /// </summary>
-        private void UpdateLookAt()
-        {
-            //Calculate a rotation matrix from our camera's rotation, used
-            //to orient our look at vector
-            Matrix rotationMatrix = Matrix.CreateRotationX(Rotation.X) *
-                                  Matrix.CreateRotationY(Rotation.Y);
-            //Create the look at offset vector based on the direction our camera is
-            //originally looking and our rotation matrix
-            Vector3 lookAtOffset = Vector3.Transform(Vector3.UnitZ, rotationMatrix);
-            //Finally, build the camera's look at vector by adding
-            //our current position and the look at vector offset.
-            Target = Position + lookAtOffset;
-            LookVector = Vector3.Transform(Vector3.Backward, rotationMatrix);
-            LookVector.Normalize();
-        }
+
         private readonly float Gravity = -13f;
         /// <summary>
         /// Update the camera's physics
@@ -178,14 +105,6 @@ namespace Client.Rendering
                     moveVector.Y = 1;
                 if (CurrentKeyboardState.IsKeyDown(Keys.E))
                     moveVector.Y = -1;
-                if (CurrentKeyboardState.IsKeyUp(Keys.NumPad2) && PrevKeyboardState.IsKeyDown(Keys.NumPad2))
-                    X++;
-                if (CurrentKeyboardState.IsKeyUp(Keys.NumPad5) && PrevKeyboardState.IsKeyDown(Keys.NumPad5))
-                    Y++;
-                if (CurrentKeyboardState.IsKeyUp(Keys.NumPad1) && PrevKeyboardState.IsKeyDown(Keys.NumPad1))
-                    X--;
-                if (CurrentKeyboardState.IsKeyUp(Keys.NumPad4) && PrevKeyboardState.IsKeyDown(Keys.NumPad4))
-                    Y--;
                 if (CurrentKeyboardState.IsKeyDown(Keys.Space) && !IsJumping)
                 {
                     moveVector.Y = 12;
@@ -250,8 +169,9 @@ namespace Client.Rendering
 
             gravityVector *= dt;
 
-            Vector3 feetPos = new Vector3(0, Player.Height, 0); // We are talking in World coordinates here
-            Vector3 gravLoc = PreviewMove(gravityVector - feetPos);
+            // Add the player's eye level.
+            Vector3 vectorWithFeet = new Vector3(gravityVector.X, gravityVector.Y - Player.EyeLevel, gravityVector.Z);
+            Vector3 gravLoc = PreviewMove(vectorWithFeet);
             Vector3I worldLoc = gravLoc.ToBlockCoords();
 
             if (Client.MainWorld.InBounds(worldLoc))

@@ -10,7 +10,7 @@ namespace Client
     {
         public void Draw(GraphicsDevice device)
         {
-            if (Visible)
+            if (Visible && ChunkMesh.Vertices != null)
             {
                 if (ChunkMesh.Vertices.Length > 0)
                 {

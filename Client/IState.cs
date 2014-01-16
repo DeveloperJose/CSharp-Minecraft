@@ -81,6 +81,8 @@ namespace Client
                             Client.MainWorld[x, y, z] = BlockID.Bricks;
                         else if (x == 16 && y == 16 && z == 5)
                             Client.MainWorld[x, y, z] = BlockID.Leaves;
+                        else if (x == 15 && y == 16 && z == 5)
+                            Client.MainWorld[x, y, z] = BlockID.RedFlower;
                         else if (z == 0)
                             Client.MainWorld[x, y, z] = BlockID.Admincrete;
                         else if (z == 1)
@@ -94,7 +96,6 @@ namespace Client
 
                     }
             Client.MainPlayer = new Player();
-
             Loaded = true;
             Client.Paused = false;
         }

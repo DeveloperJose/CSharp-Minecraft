@@ -17,6 +17,7 @@ namespace Client
     /// </summary>
     public sealed partial class Client : Game
     {
+        public static GraphicsDevice Device;
         public static readonly string Version = "v0.1.0";
         public static bool Paused { get; internal set; }
         private GraphicsDeviceManager Graphics { get; set; }
@@ -52,7 +53,7 @@ namespace Client
         {
             get
             {
-                return new Vector2(Viewport.Bounds.Width / 2, Viewport.Bounds.Height / 2);
+                return new Vector2(GameWindow.ClientBounds.Width / 2, GameWindow.ClientBounds.Height / 2);
             }
         }
 
@@ -100,6 +101,7 @@ namespace Client
             GameWindow = Window;
             Paused = true;
             CurrentState = new MainState();
+            Device = GraphicsDevice;
         }
 
         /// <summary>

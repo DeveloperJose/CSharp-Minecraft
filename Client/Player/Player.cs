@@ -10,20 +10,16 @@ namespace Client
 {
     public sealed class Player
     {
-        //public ChaseCamera Camera;
-        public const float EyeLevel = 1.62f;
-        public const float Height = EyeLevel;
+        public static readonly float EyeLevel = (51).FixedToRenderPixels(); // Fixed-point 51
+        public float ClickDistance = (160).FixedToRenderPixels(); //FixedPoint.Create(160);
         public FirstPersonCamera Camera;
         public Player()
         {
+            Camera = new FirstPersonCamera();
             Client.OnUpdate += Update;
-            //Camera = new ChaseCamera(Client.MainWorld.Spawn);
-            Camera = new FirstPersonCamera(Client.MainWorld.Spawn.ToRenderCoords(), Vector3.Zero);
         }
         public void Update(object sender, UpdateEventArgs e)
         {
-            // Process Input
-            //Camera.Update();
             Camera.Update(e.GameTime);
         }
     }

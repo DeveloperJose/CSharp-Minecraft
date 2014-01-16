@@ -7,12 +7,102 @@ using Microsoft.Xna.Framework;
 using Client.Rendering;
 namespace Client
 {
+    /// <summary>
+    /// Provides a set of methods for the rendering BoundingBoxes.
+    /// </summary>
+    public static class BoundingBoxRenderer
+    {
+        #region Fields
+ 
+        static VertexPositionColor[] verts = new VertexPositionColor[8];
+        static int[] indices = new int[]
+        {
+            0, 1,
+            1, 2,
+            2, 3,
+            3, 0,
+            0, 4,
+            1, 5,
+            2, 6,
+            3, 7,
+            4, 5,
+            5, 6,
+            6, 7,
+            7, 4,
+        };
+ 
+        static BasicEffect effect;
+        static VertexBuffer vertex_Buffer;
+ 
+        #endregion
+ 
+        /// <summary>
+        /// Renders the bounding box for debugging purposes.
+        /// </summary>
+        /// <param name="box">The box to render.</param>
+        /// <param name="graphicsDevice">The graphics device to use when rendering.</param>
+        /// <param name="view">The current view matrix.</param>
+        /// <param name="projection">The current projection matrix.</param>
+        /// <param name="color">The color to use for drawing the lines of the box.</param>
+        public static void Render(
+            BoundingBox box,
+            GraphicsDevice graphicsDevice,
+            Matrix view,
+            Matrix projection,
+            Color color)
+        {
+            if (effect == null)
+            {
+                effect = new BasicEffect(graphicsDevice);
+                effect.VertexColorEnabled = true;
+                effect.LightingEnabled = false;
+            }
+ 
+            Vector3[] corners = box.GetCorners();
+ 
+            for (int i = 0; i < 8; i++)
+            {
+                verts[i].Position = corners[i];
+                verts[i].Color = color;
+            }
+ 
+            vertex_Buffer = new VertexBuffer(graphicsDevice, typeof(VertexPositionColor), verts.Length, BufferUsage.WriteOnly);
+            vertex_Buffer.SetData<VertexPositionColor>(verts);
+            graphicsDevice.SetVertexBuffer(vertex_Buffer);
+ 
+            effect.View = view;
+            effect.Projection = projection;
+ 
+            effect.CurrentTechnique.Passes[0].Apply();
+ 
+            foreach (EffectPass pass in effect.CurrentTechnique.Passes)
+            {
+                graphicsDevice.DrawUserIndexedPrimitives(
+                    PrimitiveType.LineList,
+                    verts,
+                    0,
+                    8,
+                    indices,
+                    0,
+                    indices.Length / 2);
+            }
+        }
+    }
     public static class RenderExtensions
     {
-        public static Vector3I ToBlockCoords(this Vector3 renderPos)
+        private const float f = 1f / 2f;
+        public static Vector3 Center(this Vector3 v)
         {
-            renderPos /= 2;
-            return new Vector3I(renderPos.X, renderPos.Z, renderPos.Y); // Reverse
+            //return new Vector3((float)Math.Floor(v.X + f), (float)Math.Floor(v.Y + f), (float)Math.Floor(v.Z + f));
+            return new Vector3((float)Math.Floor(v.X) + f, (float)Math.Floor(v.Y) + f, (float)Math.Floor(v.Z) + f);
+        }
+        public static float FixedToRenderPixels(this int fixedPoint)
+        {
+            return (float)(fixedPoint / 32f);
+        }
+        public static Vector3I ToBlockCoords(this Vector3 v)
+        {
+            return new Vector3I((int)v.X, (int)v.Z, (int)v.Y) / 2;
         }
         public static bool Solid(this BlockID b)
         {
@@ -208,7 +298,7 @@ namespace Client
                 case BlockID.Slab:
                     break;
                 case BlockID.Bricks:
-                    return new Vector2(FirstPersonCamera.Y, FirstPersonCamera.X);
+                    return new Vector2(6, 0);
                 case BlockID.TNT:
                     break;
                 case BlockID.Books:
