@@ -137,6 +137,7 @@ namespace Client
                 }
             }
         }
+        public Vector3I Selected;
         public void Draw2D(object sender, Draw2DEventArgs e)
         {
             frameCounter++;
@@ -184,7 +185,7 @@ namespace Client
                 //distance = Vector3.Transform(distance, rotationMatrix);
 
                 Ray r = new Ray(nearPoint.Center(), direction);
-                foreach (Vector3I coord in GetCellsOnRay(r, 5))
+                foreach (Vector3I coord in GetCellsOnRay(r, 15))
                 {
                     BlockID id = Client.MainWorld[coord];
                     Vector3 renderPos = coord.ToRenderCoords();
@@ -201,6 +202,7 @@ namespace Client
                             Client.MainPlayer.Camera.ViewMatrix,
                             Client.MainPlayer.Camera.ProjectionMatrix,
                             Color.Red);
+                        Selected = coord;
                         break;
                     }
                     else
@@ -211,6 +213,13 @@ namespace Client
                             Client.MainPlayer.Camera.ProjectionMatrix,
                             Color.White);
                     }
+                }
+
+                if (Mouse.GetState().LeftButton == ButtonState.Pressed && 
+                    Client.MainWorld[Selected] != BlockID.None && 
+                    Client.MainWorld[Selected] != BlockID.Air)
+                {
+                    Client.MainWorld[Selected] = BlockID.Air;
                 }
             }
             else
