@@ -90,7 +90,7 @@ namespace Client
     }
     public static class RenderExtensions
     {
-        private const float f = 1f / 2f;
+        private const float f = 1;
         public static Vector3 Center(this Vector3 v)
         {
             //return new Vector3((float)Math.Floor(v.X + f), (float)Math.Floor(v.Y + f), (float)Math.Floor(v.Z + f));
@@ -106,15 +106,11 @@ namespace Client
         }
         public static bool Solid(this BlockID b)
         {
+            if (Transparent(b)) return false;
             switch (b)
             {
                 case BlockID.Air:
                 case BlockID.None:
-                case BlockID.Sapling:
-                case BlockID.RedFlower:
-                case BlockID.YellowFlower:
-                case BlockID.RedMushroom:
-                case BlockID.BrownMushroom:
                     return false;
                 default:
                     return true;
@@ -137,7 +133,6 @@ namespace Client
             {
                 case BlockID.Air:
                 case BlockID.None:
-
                     return false;
                 default:
                     return true;
@@ -153,6 +148,10 @@ namespace Client
                 case BlockID.RedMushroom:
                 case BlockID.BrownMushroom:
                 case BlockID.Glass:
+                case BlockID.Water:
+                case BlockID.StillWater:
+                case BlockID.Lava:
+                case BlockID.StillLava:
                     return true;
                 default:
                     return false;
@@ -164,7 +163,7 @@ namespace Client
         /// <param name="b">The block to get the mapping of.</param>
         /// <param name="d">The direction of the block to render.</param>
         /// <returns>UVMap representing the UV mapping of the current block.</returns>
-        internal static UVMap CreateUVMapping(this BlockID b, Direction d)
+        internal static UVMap? CreateUVMapping(this BlockID b, Direction d)
         {
             /*
              * Cheat Sheet
@@ -176,8 +175,13 @@ namespace Client
             // 256 = (2^16) = 1 << 16
             // x % 256 = x & (256 - 1)
             // x % 256 = x & ((1 << 16) - 1)
-            float x = ((int)b.TileVector(d).Y & ((1 << 16) - 1)) * Settings.Offset; // U
-            float y = ((int)b.TileVector(d).X & ((1 << 16) - 1)) * Settings.Offset;
+            Vector2? posOrNull = b.TileVector(d);
+            if (posOrNull == null)
+                return null;
+
+            Vector2 tile = posOrNull.GetValueOrDefault();
+            float x = ((int)tile.Y & ((1 << 16) - 1)) * Settings.Offset; // U
+            float y = ((int)tile.X & ((1 << 16) - 1)) * Settings.Offset;
 
             return new UVMap(
                 new Vector2(x + Settings.Offset, y),
@@ -192,7 +196,7 @@ namespace Client
         /// <param name="b">Block to get the texture of.</param>
         /// <param name="d">Direction of the face to get the texture of.</param>
         /// <returns>Vector2 representing the location of the texture in the texture atlas.</returns>
-        internal static Vector2 TileVector(this BlockID b, Direction d)
+        internal static Vector2? TileVector(this BlockID b, Direction d)
         {
             // The texture atlas is 256x256, we divide it in 16x16 sections. There are 256 textures in total. 16 rows and 16 columns.
             switch (b)
@@ -216,73 +220,86 @@ namespace Client
                 case BlockID.Dirt:
                     return new Vector2(0, 2);
                 case BlockID.Cobblestone:
-                    break;
+                    return new Vector2(1, 0);
                 case BlockID.Wood:
-                    break;
+                    return new Vector2(0, 4);
                 case BlockID.Sapling:
-                    break;
+                    switch (d)
+                    {
+                        case Direction.Top:
+                        case Direction.Bottom:
+                            return null;
+                        default:
+                            return new Vector2(0, 15);
+                    }
                 case BlockID.Admincrete:
                     return new Vector2(1, 1);
                 case BlockID.Water:
-                    break;
                 case BlockID.StillWater:
-                    break;
+                    return new Vector2(0, 14);
                 case BlockID.Lava:
-                    break;
                 case BlockID.StillLava:
-                    break;
+                    return new Vector2(1, 14);
                 case BlockID.Sand:
-                    break;
+                    return new Vector2(1, 9);
                 case BlockID.Gravel:
-                    break;
+                    return new Vector2(1, 3);
                 case BlockID.GoldOre:
-                    break;
+                    switch (d)
+                    {
+                        case Direction.Top:
+                            return new Vector2(1, 8);
+                        case Direction.Bottom:
+                            return new Vector2(3, 8);
+                        default:
+                            return new Vector2(2, 8);
+                    }
                 case BlockID.IronOre:
-                    break;
+                    switch (d)
+                    {
+                        case Direction.Top:
+                            return new Vector2(1, 7);
+                        case Direction.Bottom:
+                            return new Vector2(3, 7);
+                        default:
+                            return new Vector2(2, 7);
+                    }
                 case BlockID.Coal:
-                    break;
+                    return new Vector2(2, 2);
                 case BlockID.Log:
-                    break;
+                    switch (d)
+                    {
+                        case Direction.Top:
+                        case Direction.Bottom:
+                            return new Vector2(1, 5);
+                        default:
+                            return new Vector2(1, 4);
+                    }
                 case BlockID.Leaves:
                     return new Vector2(1, 6);
                 case BlockID.Sponge:
-                    break;
+                    return new Vector2(3, 0);
                 case BlockID.Glass:
-                    break;
+                    return new Vector2(3, 1);
                 case BlockID.Red:
-                    break;
                 case BlockID.Orange:
-                    break;
                 case BlockID.Yellow:
-                    break;
                 case BlockID.Lime:
-                    break;
                 case BlockID.Green:
-                    break;
                 case BlockID.Teal:
-                    break;
                 case BlockID.Aqua:
-                    break;
                 case BlockID.Cyan:
-                    break;
                 case BlockID.Blue:
-                    break;
                 case BlockID.Indigo:
-                    break;
                 case BlockID.Violet:
-                    break;
                 case BlockID.Magenta:
-                    break;
                 case BlockID.Pink:
-                    break;
                 case BlockID.Black:
-                    break;
                 case BlockID.Gray:
-                    break;
                 case BlockID.White:
-                    break;
+                    return new Vector2(4, (float)(b - 21));
                 case BlockID.YellowFlower:
-                    break;
+                    return new Vector2(0, 13);
                 case BlockID.RedFlower:
                     return new Vector2(0, 12);
                 case BlockID.BrownMushroom:

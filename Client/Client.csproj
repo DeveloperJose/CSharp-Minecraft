@@ -94,14 +94,10 @@
     <Content Include="Icon.ico" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Content\calm1.xnb" />
     <None Include="Content\char.xnb" />
-    <None Include="Content\MainFont.xnb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="Content\terrain.xnb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
+    <None Include="Content\Crosshair.xnb" />
+    <None Include="Content\MainFont.xnb" />
+    <None Include="Content\terrain.xnb" />
     <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

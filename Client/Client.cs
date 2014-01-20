@@ -91,7 +91,7 @@ namespace Client
             Graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
             Window.Title = "[HexaClassic]HC Client by Gamemakergm - " + Version;
-            IsMouseVisible = false;
+            IsMouseVisible = true;
             // When we lose focus
             Deactivated += (sender, e) =>
             {

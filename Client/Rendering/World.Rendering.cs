@@ -12,7 +12,7 @@ namespace Client
             //effect.ReferenceAlpha = 1;
             if (DebugSettings.RenderWireframe)
                 effect.Texture = Client.EmptyTexture;
-            
+
             effect.World = Matrix.Identity;
             effect.Projection = Client.MainPlayer.Camera.ProjectionMatrix;
             effect.View = Client.MainPlayer.Camera.ViewMatrix;
@@ -20,12 +20,16 @@ namespace Client
                 for (int y = 0; y < Chunks.GetLength(1); y++)
                     for (int z = 0; z < Chunks.GetLength(2); z++)
                     {
-                        if(Client.MainPlayer.Camera.BoundingFrustum.Intersects(Chunks[x,y,z].Box))
-                        {
-                            effect.CurrentTechnique.Passes[0].Apply();
-                            Chunks[x, y, z].Draw(e.GraphicsDevice);
-                        }
+                        if (!Chunks[x, y, z].Visible) continue;
+                        BoundingBoxRenderer.Render(Chunks[x, y, z].Box,
+                            Client.Device,
+                            Client.MainPlayer.Camera.ViewMatrix,
+                            Client.MainPlayer.Camera.ProjectionMatrix,
+                            Color.White);
+                        effect.CurrentTechnique.Passes[0].Apply();
+                        Chunks[x, y, z].Draw(e.GraphicsDevice);
                     }
         }
     }
 }
+

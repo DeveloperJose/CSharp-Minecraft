@@ -21,12 +21,10 @@ namespace Client
         {
             get
             {
-                //if (!InBounds(x, y, z)) // Not within world bounds.
-                //  return new Block(BlockID.Air);
                 // Determine what chunk holds this block.
-                int chunkX = x / Chunk.SizeX;
-                int chunkY = y / Chunk.SizeY;
-                int chunkZ = z / Chunk.SizeZ;
+                int chunkX = x / Chunk.Size.X;
+                int chunkY = y / Chunk.Size.Y;
+                int chunkZ = z / Chunk.Size.Z;
 
                 // Check bounds
                 if (chunkX < 0 || chunkX >= Chunks.GetLength(0)
@@ -36,9 +34,9 @@ namespace Client
 
                 Chunk chunk = Chunks[chunkX, chunkY, chunkZ];
                 // This figures out the coordinate of the block relative to chunk.
-                int levelX = x % Chunk.SizeX;
-                int levelY = y % Chunk.SizeY;
-                int levelZ = z % Chunk.SizeZ;
+                int levelX = x % Chunk.Size.X;
+                int levelY = y % Chunk.Size.Y;
+                int levelZ = z % Chunk.Size.Z;
                 return chunk[levelX, levelY, levelZ];
             }
             set
@@ -46,9 +44,9 @@ namespace Client
                 if (!InBounds(x, y, z)) // Not within world bounds.
                     return;
                 // first calculate which chunk we are talking about:
-                int chunkX = (x / Chunk.SizeX);
-                int chunkY = (y / Chunk.SizeY);
-                int chunkZ = (z / Chunk.SizeZ);
+                int chunkX = (x / Chunk.Size.X);
+                int chunkY = (y / Chunk.Size.Y);
+                int chunkZ = (z / Chunk.Size.Z);
 
                 // cannot modify chunks that are not within the visible area
                 if (chunkX < 0 || chunkX > Chunks.GetLength(0))
@@ -61,9 +59,9 @@ namespace Client
 
                 // this figures out the coordinate of the block relative to
                 // chunk origin.
-                int lx = x % Chunk.SizeX;
-                int ly = y % Chunk.SizeY;
-                int lz = z % Chunk.SizeZ;
+                int lx = x % Chunk.Size.X;
+                int ly = y % Chunk.Size.Y;
+                int lz = z % Chunk.Size.Z;
 
                 chunk[lx, ly, lz] = value;
             }
@@ -74,29 +72,31 @@ namespace Client
             Width = width;
             Height = height;
 
-            Chunks = new Chunk[Length / Chunk.SizeX, Width / Chunk.SizeY, Height / Chunk.SizeZ];
+            Chunks = new Chunk[Length / Chunk.Size.X, Width / Chunk.Size.Y, Height / Chunk.Size.Z];
             for (int x = 0; x < Chunks.GetLength(0); x++)
                 for (int y = 0; y < Chunks.GetLength(1); y++)
                     for (int z = 0; z < Chunks.GetLength(2); z++)
                     {
-                        Chunks[x, y, z] = new Chunk(this, new Vector3(x * Chunk.SizeX, y * Chunk.SizeY, z * Chunk.SizeZ));
-                        //Chunks[x, y, z].UpdateNeeded = true;
+                        Chunks[x, y, z] = new Chunk(this, new Vector3I(x * Chunk.Size.X, y * Chunk.Size.Y, z * Chunk.Size.Z));
+                        //Chunks[x, y, z].CreateMesh();
                     }
+            
+            Spawn = new Vector3I(Length / 2 + 5, Width / 2 + 5, 5);
+
             Client.OnUpdate += Update;
             Client.OnDraw3D += Draw;
         }
         public Vector3I Spawn
         {
-            get { return new Vector3I(Length / 2, Width / 2, Height); }
+            get;
+            private set;
         }
         public void Update(object sender, UpdateEventArgs e)
         {
             for (int x = 0; x < Chunks.GetLength(0); x++)
                 for (int y = 0; y < Chunks.GetLength(1); y++)
                     for (int z = 0; z < Chunks.GetLength(2); z++)
-                    {
-                        Chunks[x, y, z].Update();
-                    }
+                            Chunks[x, y, z].Update();
         }
         public bool InBounds(Vector3I pos)
         {

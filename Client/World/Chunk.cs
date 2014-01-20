@@ -3,34 +3,22 @@ namespace Client
 {
     public sealed partial class Chunk
     {
-        /// <summary>
-        /// The width (X) of the chunks.
-        /// This is currently the same as 32
-        /// 2^5
-        /// </summary>
-        public const int SizeX = 1 << 5;
-        /// <summary>
-        /// The length (Y) of the chunks.
-        /// This is currently the same as 32
-        /// 2^5
-        /// </summary>
-        public const int SizeY = 1 << 5;
-        /// <summary>
-        /// The height (Z) of the chunks.
-        /// This is currently the same as 32
-        /// 2^5
-        /// </summary>
-        public const int SizeZ = 1 << 5;
+        public static readonly Vector3I Size = new Vector3I(32, 32, 32);
 
         private World Parent;
-        private Vector3 ChunkPosition;
+        private Vector3I ChunkPosition;
         private byte[, ,] Blocks;
+        private Mesh ChunkMesh { get; set; }
+
         public BoundingBox Box;
+        public bool Visible { get { return Client.MainPlayer.Camera.BoundingFrustum.Intersects(Box); } }
+        public bool UpdateNeeded { get; set; }
+
         public bool InBounds(int x, int y, int z)
         {
-            bool checkX = x < 0 || x >= SizeX;
-            bool checkY = y < 0 || y >= SizeY;
-            bool checkZ = z < 0 || z >= SizeZ;
+            bool checkX = x < 0 || x >= Size.X;
+            bool checkY = y < 0 || y >= Size.Y;
+            bool checkZ = z < 0 || z >= Size.Z;
             return !(checkX || checkY || checkZ);
         }
         public BlockID this[int x, int y, int z]
@@ -44,7 +32,7 @@ namespace Client
             set
             {
                 if (!InBounds(x, y, z))
-                    Parent[x + (int)ChunkPosition.X, y + (int)ChunkPosition.Y, z + (int)ChunkPosition.Z] = value; // It's outside this chunk.
+                    Parent[x + ChunkPosition.X, y + ChunkPosition.Y, z + ChunkPosition.Z] = value; // It's outside this chunk.
                 Blocks[x, y, z] = (byte)value;
                 UpdateNeeded = true;
             }
@@ -60,18 +48,28 @@ namespace Client
                 this[pos.X, pos.Y, pos.Z] = value;
             }
         }
-        private Mesh ChunkMesh;
-        public Chunk(World parent, Vector3 pos)
+        public Chunk(World parent, Vector3I pos)
         {
             Parent = parent;
-            Blocks = new byte[SizeX, SizeY, SizeZ];
+            Blocks = new byte[Size.X, Size.Y, Size.Z];
             ChunkPosition = pos;
-            Box = new BoundingBox(pos, new Vector3(pos.X + SizeX, pos.Y + SizeY, pos.Z + SizeZ));
+
+            // Box drawing
+            Vector3 posRender = pos.ToRenderCoords();
+            Vector3 chunkSize = Size.ToRenderCoords();
+            Box = new BoundingBox(posRender, posRender + chunkSize);
+
+            ChunkMesh = new Mesh()
+            {
+                Vertices =
+                    new[] { new Microsoft.Xna.Framework.Graphics.VertexPositionNormalTexture() }
+            };
+            UpdateNeeded = true;
         }
-        public bool Visible = true;
-        public bool UpdateNeeded = true;
+
         public void Update()
         {
+            if (!Visible) return;
             if (UpdateNeeded)
             {
                 ChunkMesh = CreateMesh();

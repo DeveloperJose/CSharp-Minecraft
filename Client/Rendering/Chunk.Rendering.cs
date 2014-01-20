@@ -10,27 +10,24 @@ namespace Client
     {
         public void Draw(GraphicsDevice device)
         {
-            if (Visible && ChunkMesh.Vertices != null)
+            if (ChunkMesh.Vertices.Length > 0)
             {
-                if (ChunkMesh.Vertices.Length > 0)
+                using (VertexBuffer buffer = new VertexBuffer(
+                                               device,
+                                               VertexPositionNormalTexture.VertexDeclaration,
+                                               ChunkMesh.Vertices.Length, // Vertices
+                                               BufferUsage.WriteOnly))
                 {
-                    using (VertexBuffer buffer = new VertexBuffer(
-                                                   device,
-                                                   VertexPositionNormalTexture.VertexDeclaration,
-                                                   ChunkMesh.Vertices.Length, // Vertices
-                                                   BufferUsage.WriteOnly))
-                    {
-                        // Load the buffer
-                        buffer.SetData(ChunkMesh.Vertices);
-                        // Send the vertex buffer to the device
-                        device.SetVertexBuffer(buffer);
-                        // Draw the primitives from the vertex buffer to the device as triangles
-                        device.DrawPrimitives(PrimitiveType.TriangleList, 0, ChunkMesh.Vertices.Length / 3);
-                    }
+                    // Load the buffer
+                    buffer.SetData(ChunkMesh.Vertices);
+                    // Send the vertex buffer to the device
+                    device.SetVertexBuffer(buffer);
+                    // Draw the primitives from the vertex buffer to the device as triangles
+                    device.DrawPrimitives(PrimitiveType.TriangleList, 0, ChunkMesh.Vertices.Length / 3);
                 }
             }
         }
-        
+
         // Normal vectors for each face (needed for lighting / display)
         private static readonly Vector3 normalFront = new Vector3(0.0f, 0.0f, 1.0f);
         private static readonly Vector3 normalBack = new Vector3(0.0f, 0.0f, -1.0f);
@@ -42,9 +39,9 @@ namespace Client
         public Mesh CreateMesh()
         {
             List<VertexPositionNormalTexture> vertices = new List<VertexPositionNormalTexture>();
-            for (int x = 0; x < SizeX; x++)
-                for (int y = 0; y < SizeY; y++)
-                    for (int z = 0; z < SizeZ; z++)
+            for (int x = 0; x < Size.X; x++)
+                for (int y = 0; y < Size.Y; y++)
+                    for (int z = 0; z < Size.Z; z++)
                     {
                         Vector3I Position = new Vector3I(x, y, z);
 
@@ -52,9 +49,10 @@ namespace Client
                             || this[Position].Transparent()) // We still want to render them to see them.
                         {
                             Vector3 size = new Vector3(1, 1, 1);
-                            
-                            Vector3 realPos = new Vector3(Position.X, Position.Y, Position.Z) + ChunkPosition; // Array position
-                            Vector3 cubePos = new Vector3(realPos.X, realPos.Z, realPos.Y) * 2; // View position
+
+                            Vector3 realPos = (Position + ChunkPosition).ToRenderCoords();
+                            //Vector3 realPos = new Vector3(Position.X, Position.Y, Position.Z) + ChunkPosition; // Array position
+                            Vector3 cubePos = new Vector3(realPos.X, realPos.Y, realPos.Z); // View position
 
                             // Top face
                             Vector3 topLeftFront = cubePos + new Vector3(-1.0f, 1.0f, -1.0f) * size;
@@ -71,72 +69,96 @@ namespace Client
                             /* Start of Vertices */
                             if (!this[x, y, z + 1].Visible())
                             {
-                                UVMap uv = this[x, y, z].CreateUVMapping(Direction.Top);
-                                // Add the vertices for the TOP face.
-                                vertices.Add(new VertexPositionNormalTexture(topLeftFront, normalTop, uv.BottomLeft));
-                                vertices.Add(new VertexPositionNormalTexture(topRightBack, normalTop, uv.TopRight));
-                                vertices.Add(new VertexPositionNormalTexture(topLeftBack, normalTop, uv.TopLeft));
-                                vertices.Add(new VertexPositionNormalTexture(topLeftFront, normalTop, uv.BottomLeft));
-                                vertices.Add(new VertexPositionNormalTexture(topRightFront, normalTop, uv.BottomRight));
-                                vertices.Add(new VertexPositionNormalTexture(topRightBack, normalTop, uv.TopRight));
+                                UVMap? uvMap = this[x, y, z].CreateUVMapping(Direction.Top);
+                                if (uvMap != null)
+                                {
+                                    UVMap uv = uvMap.GetValueOrDefault();
+                                    // Add the vertices for the TOP face.
+                                    vertices.Add(new VertexPositionNormalTexture(topLeftFront, normalTop, uv.BottomLeft));
+                                    vertices.Add(new VertexPositionNormalTexture(topRightBack, normalTop, uv.TopRight));
+                                    vertices.Add(new VertexPositionNormalTexture(topLeftBack, normalTop, uv.TopLeft));
+                                    vertices.Add(new VertexPositionNormalTexture(topLeftFront, normalTop, uv.BottomLeft));
+                                    vertices.Add(new VertexPositionNormalTexture(topRightFront, normalTop, uv.BottomRight));
+                                    vertices.Add(new VertexPositionNormalTexture(topRightBack, normalTop, uv.TopRight));
+                                }
                             }
                             //if (!this[x, y - 1, z).Visible)
                             if (!this[x, y, z - 1].Visible())
                             {
-                                UVMap uv = this[x, y, z].CreateUVMapping(Direction.Bottom);
-                                // Add the vertices for the BOTTOM face.
-                                vertices.Add(new VertexPositionNormalTexture(btmLeftFront, normalBottom, uv.TopLeft));
-                                vertices.Add(new VertexPositionNormalTexture(btmLeftBack, normalBottom, uv.BottomLeft));
-                                vertices.Add(new VertexPositionNormalTexture(btmRightBack, normalBottom, uv.BottomRight));
-                                vertices.Add(new VertexPositionNormalTexture(btmLeftFront, normalBottom, uv.TopLeft));
-                                vertices.Add(new VertexPositionNormalTexture(btmRightBack, normalBottom, uv.BottomRight));
-                                vertices.Add(new VertexPositionNormalTexture(btmRightFront, normalBottom, uv.TopRight));
+                                UVMap? uvMap = this[x, y, z].CreateUVMapping(Direction.Bottom);
+                                if (uvMap != null)
+                                {
+                                    UVMap uv = uvMap.GetValueOrDefault();
+                                    // Add the vertices for the BOTTOM face.
+                                    vertices.Add(new VertexPositionNormalTexture(btmLeftFront, normalBottom, uv.TopLeft));
+                                    vertices.Add(new VertexPositionNormalTexture(btmLeftBack, normalBottom, uv.BottomLeft));
+                                    vertices.Add(new VertexPositionNormalTexture(btmRightBack, normalBottom, uv.BottomRight));
+                                    vertices.Add(new VertexPositionNormalTexture(btmLeftFront, normalBottom, uv.TopLeft));
+                                    vertices.Add(new VertexPositionNormalTexture(btmRightBack, normalBottom, uv.BottomRight));
+                                    vertices.Add(new VertexPositionNormalTexture(btmRightFront, normalBottom, uv.TopRight));
+                                }
                             }
                             //if (!this[x, y, z + 1).Visible)
-                            if (!this[x, y + 1, z].Visible() || this[x, y + 1, z].Transparent())
+                            if (!this[x, y + 1, z].Visible())
                             {
-                                UVMap uv = this[x, y, z].CreateUVMapping(Direction.Back);
-                                // Add the vertices for the BACK face.
-                                vertices.Add(new VertexPositionNormalTexture(topLeftBack, normalBack, uv.TopRight));
-                                vertices.Add(new VertexPositionNormalTexture(topRightBack, normalBack, uv.TopLeft));
-                                vertices.Add(new VertexPositionNormalTexture(btmLeftBack, normalBack, uv.BottomRight));
-                                vertices.Add(new VertexPositionNormalTexture(btmLeftBack, normalBack, uv.BottomRight));
-                                vertices.Add(new VertexPositionNormalTexture(topRightBack, normalBack, uv.TopLeft));
-                                vertices.Add(new VertexPositionNormalTexture(btmRightBack, normalBack, uv.BottomLeft));
+                                UVMap? uvMap = this[x, y, z].CreateUVMapping(Direction.Back);
+                                if (uvMap != null)
+                                {
+                                    UVMap uv = uvMap.GetValueOrDefault();
+                                    // Add the vertices for the BACK face.
+                                    vertices.Add(new VertexPositionNormalTexture(topLeftBack, normalBack, uv.TopRight));
+                                    vertices.Add(new VertexPositionNormalTexture(topRightBack, normalBack, uv.TopLeft));
+                                    vertices.Add(new VertexPositionNormalTexture(btmLeftBack, normalBack, uv.BottomRight));
+                                    vertices.Add(new VertexPositionNormalTexture(btmLeftBack, normalBack, uv.BottomRight));
+                                    vertices.Add(new VertexPositionNormalTexture(topRightBack, normalBack, uv.TopLeft));
+                                    vertices.Add(new VertexPositionNormalTexture(btmRightBack, normalBack, uv.BottomLeft));
+                                }
                             }
                             //if (!this[x, y, z - 1).Visible)
                             if (!this[x, y - 1, z].Visible())
                             {
-                                UVMap uv = this[x, y, z].CreateUVMapping(Direction.Front);
-                                // Add the vertices for the FRONT face.
-                                vertices.Add(new VertexPositionNormalTexture(topLeftFront, normalFront, uv.TopLeft));
-                                vertices.Add(new VertexPositionNormalTexture(btmLeftFront, normalFront, uv.BottomLeft));
-                                vertices.Add(new VertexPositionNormalTexture(topRightFront, normalFront, uv.TopRight));
-                                vertices.Add(new VertexPositionNormalTexture(btmLeftFront, normalFront, uv.BottomLeft));
-                                vertices.Add(new VertexPositionNormalTexture(btmRightFront, normalFront, uv.BottomRight));
-                                vertices.Add(new VertexPositionNormalTexture(topRightFront, normalFront, uv.TopRight));
+                                UVMap? uvMap = this[x, y, z].CreateUVMapping(Direction.Front);
+                                if (uvMap != null)
+                                {
+                                    UVMap uv = uvMap.GetValueOrDefault();
+                                    // Add the vertices for the FRONT face.
+                                    vertices.Add(new VertexPositionNormalTexture(topLeftFront, normalFront, uv.TopLeft));
+                                    vertices.Add(new VertexPositionNormalTexture(btmLeftFront, normalFront, uv.BottomLeft));
+                                    vertices.Add(new VertexPositionNormalTexture(topRightFront, normalFront, uv.TopRight));
+                                    vertices.Add(new VertexPositionNormalTexture(btmLeftFront, normalFront, uv.BottomLeft));
+                                    vertices.Add(new VertexPositionNormalTexture(btmRightFront, normalFront, uv.BottomRight));
+                                    vertices.Add(new VertexPositionNormalTexture(topRightFront, normalFront, uv.TopRight));
+                                }
                             }
                             if (!this[x - 1, y, z].Visible())
                             {
-                                UVMap uv = this[x, y, z].CreateUVMapping(Direction.Left);
-                                // Add the vertices for the LEFT face.
-                                vertices.Add(new VertexPositionNormalTexture(topLeftFront, normalLeft, uv.TopRight));
-                                vertices.Add(new VertexPositionNormalTexture(btmLeftBack, normalLeft, uv.BottomLeft));
-                                vertices.Add(new VertexPositionNormalTexture(btmLeftFront, normalLeft, uv.BottomRight));
-                                vertices.Add(new VertexPositionNormalTexture(topLeftBack, normalLeft, uv.TopLeft));
-                                vertices.Add(new VertexPositionNormalTexture(btmLeftBack, normalLeft, uv.BottomLeft));
-                                vertices.Add(new VertexPositionNormalTexture(topLeftFront, normalLeft, uv.TopRight));
+                                UVMap? uvMap = this[x, y, z].CreateUVMapping(Direction.Left);
+                                if (uvMap != null)
+                                {
+                                    UVMap uv = uvMap.GetValueOrDefault();
+                                    // Add the vertices for the LEFT face.
+                                    vertices.Add(new VertexPositionNormalTexture(topLeftFront, normalLeft, uv.TopRight));
+                                    vertices.Add(new VertexPositionNormalTexture(btmLeftBack, normalLeft, uv.BottomLeft));
+                                    vertices.Add(new VertexPositionNormalTexture(btmLeftFront, normalLeft, uv.BottomRight));
+                                    vertices.Add(new VertexPositionNormalTexture(topLeftBack, normalLeft, uv.TopLeft));
+                                    vertices.Add(new VertexPositionNormalTexture(btmLeftBack, normalLeft, uv.BottomLeft));
+                                    vertices.Add(new VertexPositionNormalTexture(topLeftFront, normalLeft, uv.TopRight));
+                                }
                             }
                             if (!this[x + 1, y, z].Visible())
                             {
-                                UVMap uv = this[x, y, z].CreateUVMapping(Direction.Right);
-                                // Add the vertices for the RIGHT face. 
-                                vertices.Add(new VertexPositionNormalTexture(topRightFront, normalRight, uv.TopLeft));
-                                vertices.Add(new VertexPositionNormalTexture(btmRightFront, normalRight, uv.BottomLeft));
-                                vertices.Add(new VertexPositionNormalTexture(btmRightBack, normalRight, uv.BottomRight));
-                                vertices.Add(new VertexPositionNormalTexture(topRightBack, normalRight, uv.TopRight));
-                                vertices.Add(new VertexPositionNormalTexture(topRightFront, normalRight, uv.TopLeft));
-                                vertices.Add(new VertexPositionNormalTexture(btmRightBack, normalRight, uv.BottomRight));
+                                UVMap? uvMap = this[x, y, z].CreateUVMapping(Direction.Right);
+                                if (uvMap != null)
+                                {
+                                    UVMap uv = uvMap.GetValueOrDefault();
+                                    // Add the vertices for the RIGHT face. 
+                                    vertices.Add(new VertexPositionNormalTexture(topRightFront, normalRight, uv.TopLeft));
+                                    vertices.Add(new VertexPositionNormalTexture(btmRightFront, normalRight, uv.BottomLeft));
+                                    vertices.Add(new VertexPositionNormalTexture(btmRightBack, normalRight, uv.BottomRight));
+                                    vertices.Add(new VertexPositionNormalTexture(topRightBack, normalRight, uv.TopRight));
+                                    vertices.Add(new VertexPositionNormalTexture(topRightFront, normalRight, uv.TopLeft));
+                                    vertices.Add(new VertexPositionNormalTexture(btmRightBack, normalRight, uv.BottomRight));
+                                }
                             }
                             /* End of Vertices */
                         }

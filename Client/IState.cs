@@ -68,22 +68,30 @@ namespace Client
         {
             // TODO: Allow external plugins.
             PluginManager.Init();
-
-            Client.OnDraw2D += Client_OnDraw2D;
-
-            // Temp. Level generation.
+            int index = 0;
+            int height = 0;
             Client.MainWorld = new World(32, 32, 32);
+            for (byte b = 0; b <= 49; b++)
+            {
+                Client.MainWorld[index, 16, 5 + height] = (BlockID)b;
+                index++;
+                if (b == 25)
+                {
+                    index = 0;
+                    height = 1;
+                }
+            }
             for (int x = 0; x < Client.MainWorld.Length; x++)
                 for (int y = 0; y < Client.MainWorld.Width; y++)
                     for (int z = 0; z < Client.MainWorld.Height; z++)
                     {
-                        if (x == 17 && y == 16 && z == 5)
-                            Client.MainWorld[x, y, z] = BlockID.Bricks;
-                        else if (x == 16 && y == 16 && z == 5)
-                            Client.MainWorld[x, y, z] = BlockID.Leaves;
-                        else if (x == 15 && y == 16 && z == 5)
-                            Client.MainWorld[x, y, z] = BlockID.RedFlower;
-                        else if (z == 0)
+                        //if (x == 17 && y == 16 && z == 5)
+                        //    Client.MainWorld[x, y, z] = BlockID.Bricks;
+                        //else if (x == 16 && y == 16 && z == 5)
+                        //    Client.MainWorld[x, y, z] = BlockID.Leaves;
+                        //else if (x == 15 && y == 16 && z == 5)
+                        //    Client.MainWorld[x, y, z] = BlockID.RedFlower;
+                        if (z == 0)
                             Client.MainWorld[x, y, z] = BlockID.Admincrete;
                         else if (z == 1)
                             Client.MainWorld[x, y, z] = BlockID.Stone;
@@ -91,13 +99,13 @@ namespace Client
                             Client.MainWorld[x, y, z] = BlockID.Dirt;
                         else if (z == 3)
                             Client.MainWorld[x, y, z] = BlockID.Grass;
-                        else
+                        else if (Client.MainWorld[x, y, z] == BlockID.None)
                             Client.MainWorld[x, y, z] = BlockID.Air;
-
                     }
-            Client.MainPlayer = new Player();
             Loaded = true;
             Client.Paused = false;
+            Client.MainPlayer = new Player();
+            Client.OnDraw2D += Client_OnDraw2D;
         }
 
         void Client_OnDraw2D(object sender, Draw2DEventArgs e)
@@ -109,10 +117,7 @@ namespace Client
                     new Rectangle(0, 0, Client.Viewport.Width, Client.Viewport.Height),
                     new Color(Color.CornflowerBlue, 75));
 
-                e.SpriteBatch.DrawString(Client.Font,
-                    "Loading world...",
-                    Client.WindowCenter - (Client.Font.MeasureString("Loading world...") / 2),
-                    Color.White);
+                //new AnchoredText(Client.Font, "Loading world...", Client.WindowCenter, TextAnchor.MiddleCenter).Draw(e.SpriteBatch);
                 e.SpriteBatch.End();
             }
             else if (Client.Paused)
