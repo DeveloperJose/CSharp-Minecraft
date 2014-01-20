@@ -70,7 +70,7 @@ namespace Client
             if (float.IsNaN(ray.Position.X) || float.IsNaN(ray.Position.Y) || float.IsNaN(ray.Position.Z)) yield break;
 
             int x = FastFloor(ray.Position.X);
-            int y = FastFloor(ray.Position.Y + Player.EyeLevel);
+            int y = FastFloor(ray.Position.Y);
             int z = FastFloor(ray.Position.Z);
 
             // Determine which way we go.
@@ -165,7 +165,7 @@ namespace Client
                 int mouseY = m.Y;
                 Vector3 nearsource = new Vector3((float)mouseX, (float)mouseY, 0f);
                 Vector3 farsource = new Vector3((float)mouseX, (float)mouseY, 1f);
-
+                
                 Vector3 nearPoint = Client.Viewport.Unproject(nearsource,
                     Client.MainPlayer.Camera.ProjectionMatrix,
                     Client.MainPlayer.Camera.ViewMatrix, 
@@ -183,16 +183,19 @@ namespace Client
                 //                        Matrix.CreateRotationY(Client.MainPlayer.Camera.Rotation.Y);
                 //distance = Vector3.Transform(distance, rotationMatrix);
 
-                Ray r = new Ray(nearPoint, direction);
+                Ray r = new Ray(nearPoint.Center(), direction);
                 foreach (Vector3I coord in GetCellsOnRay(r, 5))
                 {
                     BlockID id = Client.MainWorld[coord];
                     Vector3 renderPos = coord.ToRenderCoords();
-                    Vector3 min = new Vector3(renderPos.X - 1f, renderPos.Y - 1f, renderPos.Z - 1);
+                    Vector3 min = new Vector3(renderPos.X - 1f, renderPos.Y - 1f, renderPos.Z - 1f);
                     Vector3 max = new Vector3(renderPos.X + 1f, renderPos.Y + 1f, renderPos.Z + 1f);
+
+                    float i = Vector3.Distance(Client.MainPlayer.Camera.Position, renderPos);
+                    if (i < 2) continue;
                     if (id != BlockID.None && id != BlockID.Air)
                     {
-                        e.SpriteBatch.DrawString(Client.Font, "Looking: " + id, new Vector2(0, 80), Color.White);
+                        e.SpriteBatch.DrawString(Client.Font, "Looking: " + id + " - " + i, new Vector2(0, 80), Color.White);
                         BoundingBoxRenderer.Render(new BoundingBox(min, max),
                             Client.Device,
                             Client.MainPlayer.Camera.ViewMatrix,

@@ -94,7 +94,8 @@ namespace Client
         public static Vector3 Center(this Vector3 v)
         {
             //return new Vector3((float)Math.Floor(v.X + f), (float)Math.Floor(v.Y + f), (float)Math.Floor(v.Z + f));
-            return new Vector3((float)Math.Floor(v.X) + f, (float)Math.Floor(v.Y) + f, (float)Math.Floor(v.Z) + f);
+            //return new Vector3((float)Math.Floor(v.X) + f, (float)Math.Floor(v.Y) + f, (float)Math.Floor(v.Z) + f);
+            return new Vector3((float)Math.Round(v.X + f), (float)Math.Round(v.Y + f), (float)Math.Round(v.Z + f));
         }
         public static float FixedToRenderPixels(this int fixedPoint)
         {
