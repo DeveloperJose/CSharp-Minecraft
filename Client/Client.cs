@@ -18,7 +18,7 @@ namespace Client
     public sealed partial class Client : Game
     {
         public static GraphicsDevice Device;
-        public static readonly string Version = "v0.1.0";
+        public static readonly string Version = "v0.1.1";
         public static bool Paused { get; internal set; }
         private GraphicsDeviceManager Graphics { get; set; }
         private SpriteBatch SpriteBatch { get; set; }

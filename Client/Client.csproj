@@ -11,6 +11,8 @@
     <RootNamespace>Client</RootNamespace>
     <AssemblyName>Client</AssemblyName>
     <FileAlignment>512</FileAlignment>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
     <PlatformTarget>x86</PlatformTarget>
@@ -22,6 +24,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
     <PlatformTarget>x86</PlatformTarget>
@@ -32,6 +35,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup>
     <ApplicationIcon>Icon.ico</ApplicationIcon>
@@ -40,6 +44,12 @@
     <Compile Include="ChaseCamera.cs" />
     <Compile Include="Client.cs" />
     <Compile Include="Client.Events.cs" />
+    <Compile Include="ContentDownloadForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ContentDownloadForm.Designer.cs">
+      <DependentUpon>ContentDownloadForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="IState.cs" />
     <Compile Include="Plugin\IListener.cs" />
     <Compile Include="Player\Mob.cs" />
@@ -82,7 +92,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\SharpDX.2.5.0\lib\net40\SharpDX.dll</HintPath>
     </Reference>
+    <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
+    <Reference Include="System.IO.Compression.FileSystem" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="Tao.Sdl">
       <HintPath>..\..\..\..\..\..\Program Files (x86)\MSBuild\..\MonoGame\v3.0\Assemblies\WindowsGL\Tao.Sdl.dll</HintPath>
@@ -94,11 +106,17 @@
     <Content Include="Icon.ico" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="app.config" />
     <None Include="Content\char.xnb" />
     <None Include="Content\Crosshair.xnb" />
     <None Include="Content\MainFont.xnb" />
     <None Include="Content\terrain.xnb" />
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="ContentDownloadForm.resx">
+      <DependentUpon>ContentDownloadForm.cs</DependentUpon>
+    </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\packages\openal.redist.2.0.7.0\build\net40\openal.redist.targets" Condition="Exists('..\packages\openal.redist.2.0.7.0\build\net40\openal.redist.targets')" />
